@@ -1,0 +1,2768 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Badminton Club Attendance System</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      :root {
+        --primary: #2e7d32;
+        --primary-light: #4caf50;
+        --secondary: #ff9800;
+        --light: #f5f5f5;
+        --dark: #333;
+        --danger: #f44336;
+        --warning: #ffc107;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
+
+      body {
+        background-color: #f9f9f9;
+        color: var(--dark);
+        line-height: 1.6;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+
+      header {
+        background-color: var(--primary);
+        color: white;
+        padding: 20px 0;
+        text-align: center;
+        border-radius: 8px 8px 0 0;
+        margin-bottom: 20px;
+      }
+
+      header h1 {
+        font-size: 2.2rem;
+        margin-bottom: 10px;
+      }
+
+      header p {
+        font-size: 1.1rem;
+        opacity: 0.9;
+      }
+
+      .card {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin-bottom: 25px;
+        overflow: hidden;
+      }
+
+      .card-header {
+        background-color: var(--primary-light);
+        color: white;
+        padding: 15px 20px;
+        font-size: 1.2rem;
+        font-weight: 600;
+      }
+
+      .card-body {
+        padding: 20px;
+      }
+
+      .form-group {
+        margin-bottom: 15px;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 500;
+      }
+
+      select,
+      input,
+      textarea {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 1rem;
+      }
+
+      button {
+        background-color: var(--primary);
+        color: white;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 1rem;
+        font-weight: 500;
+        transition: background-color 0.3s;
+      }
+
+      button:hover {
+        background-color: var(--primary-light);
+      }
+
+      .btn-secondary {
+        background-color: var(--secondary);
+      }
+
+      .btn-secondary:hover {
+        background-color: #e68900;
+      }
+
+      .btn-danger {
+        background-color: var(--danger);
+      }
+
+      .btn-danger:hover {
+        background-color: #d32f2f;
+      }
+
+      .status-message {
+        padding: 10px;
+        border-radius: 4px;
+        margin: 10px 0;
+        text-align: center;
+      }
+
+      .success {
+        background-color: #e8f5e9;
+        color: var(--primary);
+        border: 1px solid #c8e6c9;
+      }
+
+      .error {
+        background-color: #ffebee;
+        color: var(--danger);
+        border: 1px solid #ffcdd2;
+      }
+
+      .host-info {
+        background-color: #e8f5e9;
+        border: 1px solid #c8e6c9;
+        border-radius: 4px;
+        padding: 15px;
+        margin-bottom: 20px;
+      }
+
+      .host-info h4 {
+        color: var(--primary);
+        margin-bottom: 10px;
+      }
+
+      .password-requirement {
+        font-size: 0.9rem;
+        color: #666;
+        margin-top: 5px;
+        font-style: italic;
+      }
+
+      .host-card {
+        background: white;
+        border-radius: 8px;
+        padding: 15px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        transition: transform 0.2s;
+        border-left: 4px solid var(--primary);
+      }
+
+      .host-card:hover {
+        transform: translateY(-3px);
+      }
+
+      .host-name {
+        font-weight: 600;
+        margin-bottom: 5px;
+        color: var(--primary);
+      }
+
+      .host-role {
+        font-size: 0.9rem;
+        color: #666;
+        background-color: #f0f0f0;
+        padding: 4px 8px;
+        border-radius: 12px;
+        display: inline-block;
+      }
+
+      .management-section {
+        display: none;
+      }
+
+      .management-section.active {
+        display: block;
+      }
+
+      #current-players-list,
+      #current-hosts-list {
+        list-style: none;
+        padding: 0;
+      }
+
+      #current-players-list li,
+      #current-hosts-list li {
+        padding: 8px;
+        margin-bottom: 5px;
+        background-color: #f9f9f9;
+        border-radius: 4px;
+        border-left: 3px solid var(--primary-light);
+      }
+
+      .warning {
+        background-color: #fff8e1;
+        color: #ff8f00;
+        border: 1px solid #ffecb3;
+      }
+
+      .info {
+        background-color: #e3f2fd;
+        color: #1976d2;
+        border: 1px solid #bbdefb;
+      }
+
+      .rules-section {
+        background-color: #e8f5e9;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 25px;
+      }
+
+      .rules-section h3 {
+        color: var(--primary);
+        margin-bottom: 15px;
+      }
+
+      .rules-section ul {
+        padding-left: 20px;
+      }
+
+      .rules-section li {
+        margin-bottom: 10px;
+      }
+
+      .tabs {
+        display: flex;
+        border-bottom: 1px solid #ddd;
+        margin-bottom: 20px;
+      }
+
+      .tab {
+        padding: 12px 20px;
+        cursor: pointer;
+        border-bottom: 3px solid transparent;
+      }
+
+      .tab.active {
+        border-bottom: 3px solid var(--primary);
+        font-weight: 600;
+        color: var(--primary);
+      }
+
+      .tab-content {
+        display: none;
+      }
+
+      .tab-content.active {
+        display: block;
+      }
+
+      .player-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 15px;
+      }
+
+      .player-card {
+        background: white;
+        border-radius: 8px;
+        padding: 15px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        transition: transform 0.2s;
+      }
+
+      .player-card:hover {
+        transform: translateY(-5px);
+      }
+
+      .player-name {
+        font-weight: 600;
+        margin-bottom: 10px;
+      }
+
+      .player-status {
+        font-size: 0.9rem;
+        padding: 5px 10px;
+        border-radius: 20px;
+        display: inline-block;
+      }
+
+      .status-yes {
+        background-color: #e8f5e9;
+        color: var(--primary);
+      }
+
+      .status-no {
+        background-color: #ffebee;
+        color: var(--danger);
+      }
+
+      .status-warning {
+        background-color: #fff8e1;
+        color: #ff8f00;
+      }
+
+      .status-remove {
+        background-color: #f5f5f5;
+        color: #757575;
+        text-decoration: line-through;
+      }
+
+      .attendance-table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      .attendance-table th,
+      .attendance-table td {
+        padding: 12px 15px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+      }
+
+      .attendance-table th {
+        background-color: #f5f5f5;
+        font-weight: 600;
+      }
+
+      .attendance-table tr:hover {
+        background-color: #f9f9f9;
+      }
+
+      footer {
+        text-align: center;
+        margin-top: 40px;
+        padding: 20px;
+        color: #666;
+        font-size: 0.9rem;
+      }
+
+      /* Modern Loading Styles */
+      .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(4px);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        transition: opacity 0.3s ease;
+      }
+
+      .loading-content {
+        text-align: center;
+        max-width: 320px;
+        padding: 20px;
+      }
+
+      .loading-spinner {
+        width: 60px;
+        height: 60px;
+        border: 4px solid #e0e0e0;
+        border-top: 4px solid var(--primary);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 20px;
+      }
+
+      .loading-text {
+        color: var(--primary);
+        font-size: 1.1rem;
+        font-weight: 500;
+        margin-bottom: 8px;
+      }
+
+      .loading-subtitle {
+        color: #666;
+        font-size: 0.9rem;
+        line-height: 1.4;
+        text-align: center;
+      }
+
+      .loading-dots {
+        display: inline-block;
+        width: auto;
+        min-width: 20px;
+        text-align: center;
+      }
+
+      .loading-dots::after {
+        content: "";
+        animation: dots 1.5s infinite;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      @keyframes dots {
+        0%,
+        20% {
+          content: "";
+        }
+        40% {
+          content: ".";
+        }
+        60% {
+          content: "..";
+        }
+        80%,
+        100% {
+          content: "...";
+        }
+      }
+
+      /* Skeleton Loading for Cards */
+      .skeleton {
+        background: linear-gradient(
+          90deg,
+          #f0f0f0 25%,
+          #e0e0e0 50%,
+          #f0f0f0 75%
+        );
+        background-size: 200% 100%;
+        animation: loading-shimmer 1.5s infinite;
+      }
+
+      .skeleton-card {
+        background: white;
+        border-radius: 8px;
+        padding: 15px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        margin-bottom: 15px;
+      }
+
+      .skeleton-line {
+        height: 16px;
+        border-radius: 4px;
+        margin-bottom: 10px;
+      }
+
+      .skeleton-line.short {
+        width: 60%;
+      }
+
+      .skeleton-line.medium {
+        width: 80%;
+      }
+
+      .skeleton-line.long {
+        width: 100%;
+      }
+
+      @keyframes loading-shimmer {
+        0% {
+          background-position: -200% 0;
+        }
+        100% {
+          background-position: 200% 0;
+        }
+      }
+
+      /* Hide content while loading */
+      .loading-active .main-content {
+        opacity: 0.3;
+        pointer-events: none;
+      }
+
+      /* Standard Setup Loading */
+      .setup-loading {
+        display: none;
+        padding: 15px;
+        background-color: #e3f2fd;
+        border: 1px solid #bbdefb;
+        border-radius: 4px;
+        margin: 15px 0;
+        text-align: center;
+      }
+
+      .setup-loading.active {
+        display: block;
+      }
+
+      .setup-loading-spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 2px solid #e0e0e0;
+        border-top: 2px solid var(--primary);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-right: 10px;
+        vertical-align: middle;
+      }
+
+      .setup-loading-text {
+        color: #1976d2;
+        font-weight: 500;
+        vertical-align: middle;
+      }
+
+      @media (max-width: 768px) {
+        .player-list {
+          grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        }
+
+        .tabs {
+          flex-direction: column;
+        }
+
+        .tab {
+          border-bottom: 1px solid #ddd;
+          border-left: 3px solid transparent;
+        }
+
+        .tab.active {
+          border-bottom: 1px solid #ddd;
+          border-left: 3px solid var(--primary);
+        }
+
+        .loading-spinner {
+          width: 50px;
+          height: 50px;
+        }
+
+        .loading-text {
+          font-size: 1rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay">
+      <div class="loading-content">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Loading Badminton System</div>
+        <div class="loading-subtitle">
+          Fetching data<span class="loading-dots"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="container main-content">
+      <header>
+        <h1>🏸 Badminton Club Attendance System</h1>
+        <p>Manage your daily attendance with automated tracking and warnings</p>
+      </header>
+
+      <div class="rules-section">
+        <h3>📋 System Rules</h3>
+        <ul>
+          <li>
+            <strong>Cut-off Time:</strong> Players must mark attendance by 10:30
+            PM the previous day
+          </li>
+          <li>
+            <strong>Warnings:</strong> 5 "Yes" but didn't attend in a month =
+            Removal
+          </li>
+          <li>
+            <strong>Inactivity:</strong> 10 "No" without valid reason in a month
+            = Removal
+          </li>
+          <li>
+            <strong>Extended Leave:</strong> More than 15 days absent in a month
+            (even with reason) = Removal
+          </li>
+          <li>
+            <strong>Host Updates:</strong> Host can update actual attendance
+            before 10 AM. If a player forgets to mark "No" with reason and host
+            updates to "Yes" the next day, a warning is given. Removal after 5
+            such warnings.
+          </li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-header">👥 Current Hosts & Co-Hosts</div>
+        <div class="card-body">
+          <div id="hosts-display" class="player-list">
+            <!-- Host cards will be populated by JavaScript -->
+          </div>
+        </div>
+      </div>
+
+      <div class="tabs">
+        <div class="tab active" data-tab="player-form">Player Attendance</div>
+        <div class="tab" data-tab="host-form">Host Update</div>
+        <div class="tab" data-tab="host-management">Host Management</div>
+        <div class="tab" data-tab="view-data">View Attendance</div>
+        <div class="tab" data-tab="players">Player Status</div>
+      </div>
+
+      <!-- Player Form Tab -->
+      <div class="tab-content active" id="player-form">
+        <div class="card">
+          <div class="card-header">Mark Your Availability</div>
+          <div class="card-body">
+            <div id="player-form-message"></div>
+            <form id="playerAttendanceForm">
+              <div class="form-group">
+                <label for="playerName">Player Name</label>
+                <select id="playerName" required>
+                  <option value="">Select your name</option>
+                  <!-- Player options will be populated by JavaScript -->
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="availability">Availability for Tomorrow</label>
+                <select id="availability" required>
+                  <option value="">Select availability</option>
+                  <option value="Yes">Yes, I will attend</option>
+                  <option value="No">No, I cannot attend</option>
+                </select>
+              </div>
+              <div class="form-group" id="reasonGroup" style="display: none">
+                <label for="reason">Reason (Optional)</label>
+                <textarea
+                  id="reason"
+                  placeholder="If you selected 'No', you can provide a reason (e.g., sick, out of station)"
+                ></textarea>
+              </div>
+              <button type="submit">Submit Availability</button>
+            </form>
+            <div
+              id="cutoff-warning"
+              class="status-message warning"
+              style="display: none"
+            >
+              <strong>Note:</strong> Form submission is only allowed until 10:30
+              PM for tomorrow's session.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Host Form Tab -->
+      <div class="tab-content" id="host-form">
+        <div class="card">
+          <div class="card-header">
+            Host & Co-Host - Update Actual Attendance
+          </div>
+          <div class="card-body">
+            <div class="host-info">
+              <h4>🔐 Host/Co-Host Authentication Required</h4>
+              <p>
+                Both hosts and co-hosts can update actual attendance for today's
+                session.
+              </p>
+              <p>
+                <strong>Time Restriction:</strong> Updates must be made before
+                11:59 PM IST on the day of the session.
+              </p>
+            </div>
+            <div id="host-form-message"></div>
+            <form id="hostAttendanceForm">
+              <div class="form-group">
+                <label for="hostName">Host/Co-Host Name</label>
+                <select id="hostName" required>
+                  <option value="">Select your name</option>
+                  <!-- Host and Co-Host options will be populated by JavaScript -->
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="hostPassword">Host/Co-Host Password</label>
+                <input
+                  type="password"
+                  id="hostPassword"
+                  placeholder="Enter host/co-host password"
+                  required
+                />
+                <div class="password-requirement">
+                  Contact the main host if you don't have the password
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="hostPlayerName">Player Name</label>
+                <select id="hostPlayerName" required>
+                  <option value="">Select player</option>
+                  <!-- Player options will be populated by JavaScript -->
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="attended">Did the player attend?</label>
+                <select id="attended" required>
+                  <option value="">Select status</option>
+                  <option value="Yes">Yes, attended</option>
+                  <option value="No">No, did not attend</option>
+                </select>
+              </div>
+              <button
+                type="submit"
+                onclick="testConnection()"
+                class="btn-secondary"
+              >
+                Update Attendance
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Host Management Tab -->
+      <div class="tab-content" id="host-management">
+        <div class="card">
+          <div class="card-header">🔧 Host Management (Admin Only)</div>
+          <div class="card-body">
+            <div id="initial-setup" class="host-info">
+              <h4>🚀 Initial Setup</h4>
+              <p>
+                No players or hosts found. Add the first player who will
+                automatically become the main host.
+              </p>
+            </div>
+
+            <div id="admin-info" class="host-info" style="display: none">
+              <h4>🔐 Host Authentication Required</h4>
+              <p>
+                Only hosts can manage players and host/co-host assignments.
+                Co-hosts cannot perform these actions.
+              </p>
+            </div>
+            <div id="host-management-message"></div>
+
+            <!-- Initial Setup Form -->
+            <div
+              id="initial-setup-form"
+              class="card"
+              style="margin-bottom: 20px"
+            >
+              <div class="card-header">Setup First Host</div>
+              <div class="card-body">
+                <form id="initialSetupForm">
+                  <div class="form-group">
+                    <label for="firstPlayerName">Your Name</label>
+                    <input
+                      type="text"
+                      id="firstPlayerName"
+                      placeholder="Enter your name"
+                      required
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label for="firstPlayerEmail">Your Email</label>
+                    <input
+                      type="email"
+                      id="firstPlayerEmail"
+                      placeholder="Enter your email"
+                      required
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label for="firstPlayerPassword">Set Admin Password</label>
+                    <input
+                      type="password"
+                      id="firstPlayerPassword"
+                      placeholder="Create a secure password"
+                      required
+                    />
+                  </div>
+                  <button type="submit">Setup as Main Host</button>
+                </form>
+
+                <!-- Setup Loading Indicator -->
+                <div id="setup-loading" class="setup-loading">
+                  <div class="setup-loading-spinner"></div>
+                  <span class="setup-loading-text"
+                    >Setting up your admin account...</span
+                  >
+                </div>
+
+                <div
+                  style="
+                    margin-top: 15px;
+                    padding-top: 15px;
+                    border-top: 1px solid #ddd;
+                  "
+                >
+                  <button
+                    type="button"
+                    onclick="testConnection()"
+                    class="btn-secondary"
+                  >
+                    🔧 Test Google Apps Script Connection
+                  </button>
+                  <button
+                    type="button"
+                    onclick="loadDataAndShow()"
+                    class="btn-secondary"
+                    style="margin-left: 10px"
+                  >
+                    📊 Check Current Data
+                  </button>
+                  <button
+                    type="button"
+                    onclick="testAddHostAction()"
+                    class="btn-secondary"
+                    style="margin-left: 10px"
+                  >
+                    🧪 Test addHost Action
+                  </button>
+                  <div
+                    id="connection-test-result"
+                    style="margin-top: 10px"
+                  ></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Admin Authentication -->
+            <div
+              id="admin-login"
+              class="card"
+              style="margin-bottom: 20px; display: none"
+            >
+              <div class="card-header">Admin Login</div>
+              <div class="card-body">
+                <form id="adminAuthForm">
+                  <div class="form-group">
+                    <label for="adminName">Admin Name</label>
+                    <select id="adminName" required>
+                      <option value="">Select your name</option>
+                      <!-- Admin options will be populated by JavaScript -->
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="adminPassword">Admin Password</label>
+                    <input
+                      type="password"
+                      id="adminPassword"
+                      placeholder="Enter admin password"
+                      required
+                    />
+                  </div>
+                  <button type="submit">Login as Admin</button>
+                </form>
+              </div>
+            </div>
+
+            <!-- Management Functions (hidden until authenticated) -->
+            <div id="management-functions" style="display: none">
+              <!-- Admin Session Info -->
+              <div
+                class="card"
+                style="margin-bottom: 20px; background-color: #f8f9fa"
+              >
+                <div class="card-body" style="padding: 15px">
+                  <div
+                    style="
+                      display: flex;
+                      justify-content: space-between;
+                      align-items: center;
+                    "
+                  >
+                    <div>
+                      <span style="color: var(--primary); font-weight: 500">
+                        🔐 Admin Session Active
+                      </span>
+                      <div
+                        style="font-size: 0.9rem; color: #666; margin-top: 5px"
+                      >
+                        Session automatically expires after 30 minutes of
+                        inactivity
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onclick="logoutAdmin()"
+                      class="btn-danger"
+                      style="padding: 8px 16px; font-size: 0.9rem"
+                    >
+                      🚪 Logout
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Player Management -->
+              <div class="card" style="margin-bottom: 20px">
+                <div class="card-header">👤 Player Management</div>
+                <div class="card-body">
+                  <div class="form-group">
+                    <label for="newPlayerName">Add New Player</label>
+                    <input
+                      type="text"
+                      id="newPlayerName"
+                      placeholder="Enter player name"
+                    />
+                    <input
+                      type="email"
+                      id="newPlayerEmail"
+                      placeholder="Enter player email"
+                      style="margin-top: 8px"
+                    />
+                    <button
+                      type="button"
+                      onclick="addPlayer()"
+                      class="btn-secondary"
+                      style="margin-top: 10px"
+                    >
+                      Add Player
+                    </button>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="removePlayerName">Remove Player</label>
+                    <select id="removePlayerName">
+                      <option value="">Select player to remove</option>
+                      <!-- Player options will be populated by JavaScript -->
+                    </select>
+                    <button
+                      type="button"
+                      onclick="removePlayer()"
+                      class="btn-danger"
+                      style="margin-top: 10px"
+                    >
+                      Remove Player
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Host Management -->
+              <div class="card" style="margin-bottom: 20px">
+                <div class="card-header">👑 Host & Co-Host Management</div>
+                <div class="card-body">
+                  <div
+                    class="host-info"
+                    style="background-color: #e3f2fd; border-color: #bbdefb"
+                  >
+                    <h4 style="color: #1976d2">ℹ️ Important</h4>
+                    <p>
+                      Only existing players can be promoted to Host or Co-Host
+                      roles. Add players first, then assign roles.
+                    </p>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="promotePlayerSelect"
+                      >Promote Player to Host/Co-Host</label
+                    >
+                    <select id="promotePlayerSelect" required>
+                      <option value="">Select an existing player</option>
+                      <!-- Player options will be populated by JavaScript -->
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="newHostRole">Role</label>
+                    <select id="newHostRole">
+                      <option value="Host">Host (Admin privileges)</option>
+                      <option value="Co-Host">
+                        Co-Host (Limited privileges)
+                      </option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="newHostPassword">Set Password</label>
+                    <input
+                      type="password"
+                      id="newHostPassword"
+                      placeholder="Create a secure password for this host"
+                      required
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    id="promoteHostBtn"
+                    onclick="addHost()"
+                    class="btn-secondary"
+                  >
+                    Promote to Host/Co-Host
+                  </button>
+
+                  <div class="form-group" style="margin-top: 20px">
+                    <label for="removeHostName">Remove Host/Co-Host</label>
+                    <select id="removeHostName">
+                      <option value="">Select host to remove</option>
+                      <!-- Host options will be populated by JavaScript -->
+                    </select>
+                    <button
+                      type="button"
+                      id="removeHostBtn"
+                      onclick="removeHost()"
+                      class="btn-danger"
+                      style="margin-top: 10px"
+                    >
+                      Remove Host/Co-Host
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Current Lists -->
+              <div class="card">
+                <div class="card-header">📋 Current Players & Hosts</div>
+                <div class="card-body">
+                  <div
+                    style="
+                      display: grid;
+                      grid-template-columns: 1fr 1fr;
+                      gap: 20px;
+                    "
+                  >
+                    <div>
+                      <h4>Players</h4>
+                      <ul id="current-players-list"></ul>
+                    </div>
+                    <div>
+                      <h4>Hosts & Co-Hosts</h4>
+                      <ul id="current-hosts-list"></ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- View Data Tab -->
+      <div class="tab-content" id="view-data">
+        <div class="card">
+          <div class="card-header">Attendance Records</div>
+          <div class="card-body">
+            <div class="form-group">
+              <label for="filterPlayer">Filter by Player</label>
+              <select id="filterPlayer">
+                <option value="">All Players</option>
+                <!-- Player options will be populated by JavaScript -->
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="filterDate">Filter by Date</label>
+              <input type="date" id="filterDate" />
+            </div>
+            <div id="attendance-table-container">
+              <table class="attendance-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Player</th>
+                    <th>Availability</th>
+                    <th>Reason</th>
+                    <th>Attended</th>
+                    <th>Warnings</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="attendance-table-body">
+                  <!-- Table rows will be populated by JavaScript -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Players Tab -->
+      <div class="tab-content" id="players">
+        <div class="card">
+          <div class="card-header">Player Status Overview</div>
+          <div class="card-body">
+            <div id="player-status-container" class="player-list">
+              <!-- Player cards will be populated by JavaScript -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer>
+        <p>
+          Badminton Club Attendance System &copy; 2025 | Automated with Google
+          Apps Script
+        </p>
+      </footer>
+    </div>
+
+    <script>
+      // Google Apps Script Configuration
+      const SCRIPT_URL =
+        "https://script.google.com/macros/s/AKfycbzVwLJTz0voCC67F554OGzW1utfiY5zPlvJV6odPqybxnCxkNtaTRKN9ZNqcbi24SrI/exec"; // Replace with your deployed web app URL
+
+      // Data will be loaded from Google Sheets
+      let players = [];
+      let hostConfig = {
+        hosts: [],
+      };
+
+      let isAdminAuthenticated = false;
+      let currentAdmin = null;
+
+      let attendanceData = [];
+      let isDataLoaded = false; // Track if initial data load is complete
+
+      // Security Functions
+      async function hashPassword(password) {
+        // Simple client-side hashing using Web Crypto API
+        const encoder = new TextEncoder();
+        const data = encoder.encode(password + "badminton_salt_2025"); // Add salt
+        const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        const hashHex = hashArray
+          .map((b) => b.toString(16).padStart(2, "0"))
+          .join("");
+        return hashHex;
+      }
+
+      // Generate a secure session token
+      function generateSecureToken() {
+        const array = new Uint8Array(32);
+        crypto.getRandomValues(array);
+        return Array.from(array, (byte) =>
+          byte.toString(16).padStart(2, "0")
+        ).join("");
+      }
+
+      // Session management
+      let sessionToken = null;
+      let sessionExpiry = null;
+      const SESSION_DURATION = 30 * 60 * 1000; // 30 minutes
+
+      function createSession(adminData) {
+        sessionToken = generateSecureToken();
+        sessionExpiry = Date.now() + SESSION_DURATION;
+        currentAdmin = {
+          name: adminData.name,
+          role: adminData.role,
+          isAdmin: adminData.isAdmin,
+          sessionToken: sessionToken,
+        };
+
+        // Store session in sessionStorage (more secure than localStorage)
+        sessionStorage.setItem(
+          "badminton_session",
+          JSON.stringify({
+            token: sessionToken,
+            expiry: sessionExpiry,
+            admin: currentAdmin,
+          })
+        );
+      }
+
+      function validateSession() {
+        const session = sessionStorage.getItem("badminton_session");
+        if (!session) return false;
+
+        try {
+          const sessionData = JSON.parse(session);
+          if (Date.now() > sessionData.expiry) {
+            clearSession();
+            return false;
+          }
+
+          sessionToken = sessionData.token;
+          sessionExpiry = sessionData.expiry;
+          currentAdmin = sessionData.admin;
+          return true;
+        } catch (error) {
+          clearSession();
+          return false;
+        }
+      }
+
+      function clearSession() {
+        sessionToken = null;
+        sessionExpiry = null;
+        currentAdmin = null;
+        isAdminAuthenticated = false;
+        sessionStorage.removeItem("badminton_session");
+      }
+
+      function extendSession() {
+        if (sessionToken && sessionExpiry) {
+          sessionExpiry = Date.now() + SESSION_DURATION;
+          const session = JSON.parse(
+            sessionStorage.getItem("badminton_session")
+          );
+          session.expiry = sessionExpiry;
+          sessionStorage.setItem("badminton_session", JSON.stringify(session));
+        }
+      }
+
+      function startSessionMonitoring() {
+        // Check session every 30 seconds (to avoid premature logout)
+        setInterval(() => {
+          if (!validateSession() && isAdminAuthenticated) {
+            showMessage(
+              "host-management-message",
+              "Session expired. Please login again.",
+              "warning"
+            );
+            logoutAdmin();
+          }
+        }, 30000); // Check every 30 seconds
+
+        // Extend session on user activity (more events)
+        document.addEventListener("click", extendSession);
+        document.addEventListener("keypress", extendSession);
+        document.addEventListener("mousemove", extendSession);
+        document.addEventListener(
+          "focus",
+          function () {
+            if (!validateSession() && isAdminAuthenticated) {
+              showMessage(
+                "host-management-message",
+                "Session expired. Please login again.",
+                "warning"
+              );
+              logoutAdmin();
+            } else {
+              extendSession();
+            }
+          },
+          true
+        );
+        document.addEventListener("visibilitychange", function () {
+          if (!document.hidden) {
+            if (!validateSession() && isAdminAuthenticated) {
+              showMessage(
+                "host-management-message",
+                "Session expired. Please login again.",
+                "warning"
+              );
+              logoutAdmin();
+            } else {
+              extendSession();
+            }
+          }
+        });
+      }
+
+      function logoutAdmin() {
+        clearSession();
+        document.getElementById("management-functions").style.display = "none";
+        showMessage(
+          "host-management-message",
+          "Logged out successfully.",
+          "info"
+        );
+      }
+
+      // Loading Control Functions
+      function showLoading() {
+        const loadingOverlay = document.getElementById("loading-overlay");
+        const body = document.body;
+        if (loadingOverlay) {
+          loadingOverlay.style.display = "flex";
+          body.classList.add("loading-active");
+        }
+      }
+
+      function hideLoading() {
+        const loadingOverlay = document.getElementById("loading-overlay");
+        const body = document.body;
+        if (loadingOverlay) {
+          // Add a small delay for smooth transition
+          setTimeout(() => {
+            loadingOverlay.style.opacity = "0";
+            setTimeout(() => {
+              loadingOverlay.style.display = "none";
+              body.classList.remove("loading-active");
+            }, 300);
+          }, 500); // Show loading for at least 500ms for better UX
+        }
+      }
+
+      function updateLoadingText(text, subtitle = null) {
+        const loadingText = document.querySelector(".loading-text");
+        const loadingSubtitle = document.querySelector(".loading-subtitle");
+        if (loadingText) loadingText.textContent = text;
+        if (loadingSubtitle && subtitle) {
+          loadingSubtitle.innerHTML =
+            subtitle + '<span class="loading-dots"></span>';
+        }
+      }
+
+      // Setup Loading Control Functions
+      function showSetupLoading() {
+        const setupLoading = document.getElementById("setup-loading");
+        if (setupLoading) {
+          setupLoading.classList.add("active");
+        }
+      }
+
+      function hideSetupLoading() {
+        const setupLoading = document.getElementById("setup-loading");
+        if (setupLoading) {
+          setupLoading.classList.remove("active");
+        }
+      }
+
+      function updateSetupLoadingText(text) {
+        const setupText = document.querySelector(".setup-loading-text");
+        if (setupText) {
+          setupText.textContent = text;
+        }
+      }
+
+      // Google Apps Script Integration Functions
+      async function loadDataFromSheets(showLoading = true) {
+        try {
+          console.log("Loading data ...");
+          console.log("Using SCRIPT_URL:", SCRIPT_URL);
+
+          // Update loading status only if showing loading
+          if (showLoading) {
+            updateLoadingText("Loading Players", "Fetching player data");
+          }
+
+          // Load players
+          const playersResponse = await fetch(
+            `${SCRIPT_URL}?action=getPlayers`
+          );
+          const playersData = await playersResponse.json();
+          if (playersData.success) {
+            players = playersData.players;
+          }
+
+          // Update loading status only if showing loading
+          if (showLoading) {
+            updateLoadingText("Loading Hosts", "Fetching host data");
+          }
+
+          // Load hosts
+          const hostsResponse = await fetch(`${SCRIPT_URL}?action=getHosts`);
+          const hostsData = await hostsResponse.json();
+          if (hostsData.success) {
+            hostConfig.hosts = hostsData.hosts;
+          }
+
+          // Update loading status only if showing loading
+          if (showLoading) {
+            updateLoadingText(
+              "Loading Attendance",
+              "Fetching attendance records"
+            );
+          }
+
+          // Load attendance data
+          const attendanceResponse = await fetch(
+            `${SCRIPT_URL}?action=getData`
+          );
+          const attendanceDataResponse = await attendanceResponse.json();
+          if (attendanceDataResponse.success) {
+            attendanceData = attendanceDataResponse.data;
+          }
+
+          // Update loading status only if showing loading
+          if (showLoading) {
+            updateLoadingText(
+              "Setting up Interface",
+              "Preparing dropdowns and lists"
+            );
+          }
+
+          // Debug: Check what we actually received
+          console.log("=== FINAL DATA CHECK ===");
+          console.log("Players array:", players);
+          console.log("Players length:", players.length);
+          console.log("Hosts array:", hostConfig.hosts);
+          console.log("Hosts length:", hostConfig.hosts.length);
+          console.log("Attendance data:", attendanceData.length, "records");
+
+          // Mark data as loaded and update UI
+          isDataLoaded = true;
+          checkInitialSetup();
+          populatePlayerDropdowns();
+          displayCurrentHosts();
+          updateManagementLists();
+          updatePlayerStatus();
+          updateAttendanceTable();
+
+          // Hide loading overlay only if we were showing it
+          if (showLoading) {
+            hideLoading();
+          }
+        } catch (error) {
+          console.error("Error loading data from sheets:", error);
+          isDataLoaded = true; // Even on error, mark as "loaded" to show appropriate UI
+
+          if (showLoading) {
+            // Update loading to show error
+            updateLoadingText("Connection Error", "Failed to load data");
+
+            // Hide loading after showing error briefly
+            setTimeout(() => {
+              hideLoading();
+              checkInitialSetup(); // Show initial setup if there's an error loading data
+              showMessage(
+                "host-management-message",
+                "Error loading data. Please check your connection.",
+                "error"
+              );
+            }, 2000);
+          } else {
+            checkInitialSetup();
+          }
+        }
+      }
+
+      async function submitToGoogleSheets(action, data) {
+        try {
+          console.log("Submitting data:", action, data);
+          console.log("Using SCRIPT_URL:", SCRIPT_URL);
+
+          const formData = new FormData();
+          formData.append("action", action);
+
+          Object.keys(data).forEach((key) => {
+            formData.append(key, data[key]);
+          });
+
+          const response = await fetch(SCRIPT_URL, {
+            method: "POST",
+            body: formData,
+          });
+
+          console.log("Response status:", response.status);
+          console.log("Response headers:", response.headers);
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const result = await response.json();
+          console.log("Response result:", result);
+          return result;
+        } catch (error) {
+          console.error("Detailed error submitting data", error);
+          return {
+            success: false,
+            message: `Network error: ${error.message}. Check browser console for details.`,
+          };
+        }
+      }
+
+      // Initialize the application
+      document.addEventListener("DOMContentLoaded", function () {
+        // Show loading immediately
+        showLoading();
+
+        // Check for existing session
+        if (validateSession()) {
+          isAdminAuthenticated = true;
+          document.getElementById("management-functions").style.display =
+            "block";
+          startSessionMonitoring();
+        }
+
+        initializeApp();
+        setupEventListeners();
+        checkCutoffTime();
+        // Load data from Google Sheets automatically
+        loadDataFromSheets();
+      });
+
+      function initializeApp() {
+        // Show loading state initially
+        checkInitialSetup();
+
+        // These will be called again once data is loaded
+        populatePlayerDropdowns();
+        displayCurrentHosts();
+        updateManagementLists();
+      }
+
+      function populatePlayerDropdowns() {
+        const playerSelects = [
+          document.getElementById("playerName"),
+          document.getElementById("hostPlayerName"),
+          document.getElementById("filterPlayer"),
+        ];
+
+        playerSelects.forEach((select) => {
+          // Clear existing options except the first one
+          while (select.options.length > 1) {
+            select.remove(1);
+          }
+
+          // Add player options
+          players.forEach((player) => {
+            const option = document.createElement("option");
+            option.value = `${player.name}|${player.email}`;
+            option.textContent = `${player.name} (${player.email})`;
+            select.appendChild(option);
+          });
+        }); // Populate host dropdown
+        const hostSelect = document.getElementById("hostName");
+        if (hostSelect) {
+          console.log(
+            `Adding ${hostConfig.hosts.length} hosts to host dropdown`
+          );
+          while (hostSelect.options.length > 1) {
+            hostSelect.remove(1);
+          }
+          hostConfig.hosts.forEach((host) => {
+            const option = document.createElement("option");
+            option.value = `${host.name}|${host.email}`;
+            option.textContent = `${
+              host.fullName ? host.fullName : host.name
+            } (${host.role}, ${host.email})`;
+            hostSelect.appendChild(option);
+          });
+        } else {
+          console.log("Host select element not found");
+        }
+
+        // Populate admin dropdown
+        const adminSelect = document.getElementById("adminName");
+        if (adminSelect) {
+          while (adminSelect.options.length > 1) {
+            adminSelect.remove(1);
+          }
+          hostConfig.hosts
+            .filter((host) => host.isAdmin)
+            .forEach((admin) => {
+              const option = document.createElement("option");
+              option.value = admin.name;
+              option.textContent = admin.name;
+              adminSelect.appendChild(option);
+            });
+        }
+
+        // Populate management dropdowns
+        const removePlayerSelect = document.getElementById("removePlayerName");
+        if (removePlayerSelect) {
+          while (removePlayerSelect.options.length > 1) {
+            removePlayerSelect.remove(1);
+          }
+          players.forEach((player) => {
+            const option = document.createElement("option");
+            option.value = `${player.name}|${player.email}`;
+            option.textContent = `${player.name} (${player.email})`;
+            removePlayerSelect.appendChild(option);
+          });
+        }
+
+        const removeHostSelect = document.getElementById("removeHostName");
+        if (removeHostSelect) {
+          while (removeHostSelect.options.length > 1) {
+            removeHostSelect.remove(1);
+          }
+          hostConfig.hosts.forEach((host) => {
+            const option = document.createElement("option");
+            option.value = `${host.name}|${host.email}`;
+            option.textContent = `${
+              host.fullName ? host.fullName : host.name
+            } (${host.role}, ${host.email})`;
+            removeHostSelect.appendChild(option);
+          });
+        }
+
+        // Populate promote player dropdown (only players who are not already hosts)
+        const promotePlayerSelect = document.getElementById(
+          "promotePlayerSelect"
+        );
+        if (promotePlayerSelect) {
+          while (promotePlayerSelect.options.length > 1) {
+            promotePlayerSelect.remove(1);
+          }
+
+          // Get list of current host names
+          const hostNames = hostConfig.hosts.map((host) => host.name);
+
+          // Add players who are not already hosts
+          players.forEach((player) => {
+            if (!hostNames.includes(player.name)) {
+              const option = document.createElement("option");
+              option.value = `${player.name}|${player.email}`;
+              option.textContent = `${player.name} (${player.email})`;
+              promotePlayerSelect.appendChild(option);
+            }
+          });
+        }
+      }
+
+      function setupEventListeners() {
+        // Tab switching
+        document.querySelectorAll(".tab").forEach((tab) => {
+          tab.addEventListener("click", function () {
+            // Remove active class from all tabs and contents
+            document
+              .querySelectorAll(".tab")
+              .forEach((t) => t.classList.remove("active"));
+            document
+              .querySelectorAll(".tab-content")
+              .forEach((c) => c.classList.remove("active"));
+
+            // Add active class to clicked tab and corresponding content
+            this.classList.add("active");
+            document.getElementById(this.dataset.tab).classList.add("active");
+          });
+        });
+
+        // Show/hide reason field based on availability
+        document
+          .getElementById("availability")
+          .addEventListener("change", function () {
+            const reasonGroup = document.getElementById("reasonGroup");
+            reasonGroup.style.display = this.value === "No" ? "block" : "none";
+          });
+
+        // Player form submission
+        document
+          .getElementById("playerAttendanceForm")
+          .addEventListener("submit", function (e) {
+            e.preventDefault();
+            submitPlayerForm();
+          });
+
+        // Host form submission
+        document
+          .getElementById("hostAttendanceForm")
+          .addEventListener("submit", function (e) {
+            e.preventDefault();
+            submitHostForm();
+          });
+
+        // Initial setup form submission
+        const initialSetupForm = document.getElementById("initialSetupForm");
+        if (initialSetupForm) {
+          initialSetupForm.addEventListener("submit", function (e) {
+            e.preventDefault();
+            setupFirstHost();
+          });
+        }
+
+        // Admin form submission
+        const adminAuthForm = document.getElementById("adminAuthForm");
+        if (adminAuthForm) {
+          adminAuthForm.addEventListener("submit", function (e) {
+            e.preventDefault();
+            authenticateAdmin();
+          });
+        }
+
+        // Filter changes
+        document
+          .getElementById("filterPlayer")
+          .addEventListener("change", updateAttendanceTable);
+        document
+          .getElementById("filterDate")
+          .addEventListener("change", updateAttendanceTable);
+      }
+
+      function checkCutoffTime() {
+        const now = new Date();
+        const hour = now.getHours();
+        const minute = now.getMinutes();
+
+        // Block window: 10:30pm to 9am next day
+        let isClosed = false;
+        if (hour > 22 || (hour === 22 && minute >= 30) || hour < 9) {
+          isClosed = true;
+        }
+        if (isClosed) {
+          document.getElementById("cutoff-warning").style.display = "block";
+          document.getElementById("playerAttendanceForm").style.opacity = "0.6";
+          document.querySelector(
+            "#playerAttendanceForm button"
+          ).disabled = true;
+        } else {
+          document.getElementById("cutoff-warning").style.display = "none";
+          document.getElementById("playerAttendanceForm").style.opacity = "1";
+          document.querySelector(
+            "#playerAttendanceForm button"
+          ).disabled = false;
+        }
+        return isClosed;
+      }
+
+      async function submitPlayerForm() {
+        // Block submission if window is closed
+        if (checkCutoffTime()) {
+          showMessage(
+            "player-form-message",
+            "Attendance window is closed (10:30pm to 9am). Please try again after 9am.",
+            "error"
+          );
+          return;
+        }
+        const playerSelect = document.getElementById("playerName");
+        const playerValue = playerSelect.value;
+        let playerName = "";
+        let playerEmail = "";
+        if (playerValue && playerValue.includes("|")) {
+          const parts = playerValue.split("|");
+          playerName = parts[0].trim();
+          playerEmail = parts[1] ? parts[1].trim().toLowerCase() : "";
+        } else {
+          playerName = playerValue;
+        }
+        const availability = document.getElementById("availability").value;
+        const reason = document.getElementById("reason").value;
+
+        // Show loading message
+        showMessage("player-form-message", "Submitting...", "info");
+
+        try {
+          const result = await submitToGoogleSheets("submitPlayer", {
+            playerName: playerName,
+            playerEmail: playerEmail,
+            availability: availability,
+            reason: reason,
+          });
+
+          if (result.success) {
+            showMessage("player-form-message", result.message, "success");
+            await loadDataFromSheets();
+          } else {
+            showMessage("player-form-message", result.message, "error");
+          }
+        } catch (error) {
+          showMessage(
+            "player-form-message",
+            "Error submitting attendance: " + error,
+            "error"
+          );
+        }
+
+        document.getElementById("playerAttendanceForm").reset();
+        document.getElementById("reasonGroup").style.display = "none";
+        updatePlayerStatus();
+        updateAttendanceTable();
+      }
+
+      async function submitHostForm() {
+        const hostName = document.getElementById("hostName").value;
+        const hostPassword = document.getElementById("hostPassword").value;
+        const playerName = document.getElementById("hostPlayerName").value;
+        const attended = document.getElementById("attended").value;
+
+        if (!hostName || !hostPassword || !playerName || !attended) {
+          showMessage(
+            "host-form-message",
+            "Please fill in all fields.",
+            "error"
+          );
+          return;
+        }
+
+        // Show loading message
+        showMessage("host-form-message", "Updating attendance...", "info");
+
+        let result = null;
+        try {
+          // Parse hostName and playerName to get name and email
+          let hostNameVal = hostName;
+          let hostEmailVal = "";
+          if (hostName && hostName.includes("|")) {
+            const parts = hostName.split("|");
+            hostNameVal = parts[0].trim();
+            hostEmailVal = parts[1] ? parts[1].trim().toLowerCase() : "";
+          }
+          let playerNameVal = playerName;
+          let playerEmailVal = "";
+          if (playerName && playerName.includes("|")) {
+            const parts = playerName.split("|");
+            playerNameVal = parts[0].trim();
+            playerEmailVal = parts[1] ? parts[1].trim().toLowerCase() : "";
+          }
+          const hostPasswordHash = await hashPassword(hostPassword);
+          result = await submitToGoogleSheets("submitHost", {
+            hostName: hostNameVal,
+            hostEmail: hostEmailVal,
+            hostPasswordHash: hostPasswordHash,
+            playerName: playerNameVal,
+            playerEmail: playerEmailVal,
+            attended: attended,
+          });
+        } catch (error) {
+          showMessage("host-form-message", "Error: " + error, "error");
+          return;
+        }
+
+        if (result && result.success) {
+          showMessage("host-form-message", result.message, "success");
+          document.getElementById("hostAttendanceForm").reset();
+          await loadDataFromSheets();
+        } else if (result && result.message) {
+          showMessage("host-form-message", result.message, "error");
+        } else {
+          showMessage("host-form-message", "Unknown error occurred.", "error");
+        }
+      }
+
+      function updateAttendanceTable() {
+        const tableBody = document.getElementById("attendance-table-body");
+        const filterPlayer = document.getElementById("filterPlayer").value;
+        const filterDate = document.getElementById("filterDate").value;
+
+        // Clear table
+        tableBody.innerHTML = "";
+
+        // Filter data
+        let filteredData = [...attendanceData];
+
+        if (filterPlayer) {
+          filteredData = filteredData.filter(
+            (record) => record.player === filterPlayer
+          );
+        }
+
+        if (filterDate) {
+          filteredData = filteredData.filter(
+            (record) => record.date === filterDate
+          );
+        }
+
+        // Sort by date (newest first)
+        filteredData.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        // Populate table
+        if (filteredData.length === 0) {
+          const row = document.createElement("tr");
+          row.innerHTML = `<td colspan="7" style="text-align: center;">No attendance records found</td>`;
+          tableBody.appendChild(row);
+        } else {
+          filteredData.forEach((record) => {
+            const row = document.createElement("tr");
+
+            // Format date for display
+            const dateObj = new Date(record.date);
+            const formattedDate = dateObj.toLocaleDateString("en-US", {
+              year: "numeric",
+              month: "short",
+              day: "numeric",
+            });
+
+            row.innerHTML = `
+            <td>${formattedDate}</td>
+            <td>${record.player}</td>
+            <td><span class="player-status ${
+              record.availability === "Yes" ? "status-yes" : "status-no"
+            }">${record.availability || "N/A"}</span></td>
+            <td>${record.reason || "-"}</td>
+            <td><span class="player-status ${
+              record.attended === "Yes"
+                ? "status-yes"
+                : record.attended === "No"
+                ? "status-no"
+                : ""
+            }">${record.attended || "N/A"}</span></td>
+            <td>${record.warnings}</td>
+            <td><span class="player-status ${
+              record.status === "Remove" ? "status-remove" : "status-yes"
+            }">${record.status}</span></td>
+          `;
+
+            tableBody.appendChild(row);
+          });
+        }
+      }
+
+      function updatePlayerStatus() {
+        const container = document.getElementById("player-status-container");
+        container.innerHTML = "";
+
+        players.forEach((player) => {
+          // Support both string and object for player
+          let playerName =
+            typeof player === "object" && player !== null
+              ? player.fullName || player.name || ""
+              : player;
+          // Get player's recent records
+          const playerRecords = attendanceData
+            .filter((record) => {
+              if (typeof player === "object" && player !== null) {
+                return (
+                  record.player === player.name ||
+                  record.player === player.fullName
+                );
+              } else {
+                return record.player === player;
+              }
+            })
+            .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+          const latestRecord = playerRecords[0] || {};
+          const warningCount = playerRecords.reduce(
+            (sum, record) => sum + (record.warnings || 0),
+            0
+          );
+
+          // Check for 5 consecutive "No" without reason
+          let consecutiveNoCount = 0;
+          for (let i = 0; i < Math.min(5, playerRecords.length); i++) {
+            if (
+              playerRecords[i].availability === "No" &&
+              (!playerRecords[i].reason ||
+                playerRecords[i].reason.trim() === "")
+            ) {
+              consecutiveNoCount++;
+            } else {
+              break;
+            }
+          }
+
+          // Check for more than 15 days absent in a month (even with reason)
+          let monthlyAbsentCount = 0;
+          const currentDate = new Date();
+          const currentMonth = currentDate.getMonth();
+          const currentYear = currentDate.getFullYear();
+
+          playerRecords.forEach((record) => {
+            const recordDate = new Date(record.date);
+            if (
+              recordDate.getMonth() === currentMonth &&
+              recordDate.getFullYear() === currentYear &&
+              record.availability === "No"
+            ) {
+              monthlyAbsentCount++;
+            }
+          });
+
+          let status = "Active";
+          let statusClass = "status-yes";
+
+          if (latestRecord.status === "Remove") {
+            status = "Remove";
+            statusClass = "status-remove";
+          } else if (warningCount >= 3) {
+            status = "Remove (Warnings)";
+            statusClass = "status-remove";
+          } else if (consecutiveNoCount >= 5) {
+            status = "Remove (Inactive)";
+            statusClass = "status-remove";
+          } else if (monthlyAbsentCount > 15) {
+            status = "Remove (Extended Leave)";
+            statusClass = "status-remove";
+          } else if (warningCount > 0) {
+            status = `${warningCount} Warning(s)`;
+            statusClass = "status-warning";
+          }
+
+          const card = document.createElement("div");
+          card.className = "player-card";
+          // Secure DOM manipulation - prevent XSS
+          const playerNameDiv = document.createElement("div");
+          playerNameDiv.className = "player-name";
+          playerNameDiv.textContent = playerName; // Safe from XSS
+
+          const statusDiv = document.createElement("div");
+          statusDiv.className = `player-status ${statusClass}`;
+          statusDiv.textContent = status; // Safe from XSS
+
+          card.appendChild(playerNameDiv);
+          card.appendChild(statusDiv);
+
+          if (latestRecord.availability) {
+            const latestDiv = document.createElement("div");
+            latestDiv.style.cssText = "margin-top: 8px; font-size: 0.9rem;";
+            latestDiv.textContent = `Latest: ${latestRecord.availability}`; // Safe from XSS
+            card.appendChild(latestDiv);
+          }
+
+          container.appendChild(card);
+        });
+      }
+
+      function showMessage(elementId, message, type) {
+        const messageEl = document.getElementById(elementId);
+        messageEl.textContent = message;
+        messageEl.className = `status-message ${type}`;
+        messageEl.style.display = "block";
+
+        // Hide message after 5 seconds
+        setTimeout(() => {
+          messageEl.style.display = "none";
+        }, 5000);
+      }
+
+      // SECURITY: Sample data function removed for production security
+      function loadSampleData() {
+        // Sample data has been removed for security reasons
+        // This prevents exposure of real user names and system behavior
+        attendanceData = [];
+        console.warn("Sample data loading disabled for security");
+
+        // Update UI with sample data
+        updatePlayerStatus();
+        updateAttendanceTable();
+      }
+
+      // Host Management Functions
+      function checkInitialSetup() {
+        // Don't update UI until data is loaded from Google Sheets
+        if (!isDataLoaded) {
+          showLoadingState();
+          return;
+        }
+
+        const hasHosts =
+          Array.isArray(hostConfig.hosts) && hostConfig.hosts.length > 0;
+        const hasPlayers = Array.isArray(players) && players.length > 0;
+
+        // Show/hide appropriate sections
+        const initialSetup = document.getElementById("initial-setup");
+        const initialSetupForm = document.getElementById("initial-setup-form");
+        const adminInfo = document.getElementById("admin-info");
+        const adminLogin = document.getElementById("admin-login");
+        const managementFunctions = document.getElementById(
+          "management-functions"
+        );
+
+        // Only allow initial setup if hosts array is truly empty (not undefined/null)
+        if (
+          hostConfig.hosts &&
+          Array.isArray(hostConfig.hosts) &&
+          hostConfig.hosts.length === 0
+        ) {
+          // Show initial setup only when there are no hosts
+          if (initialSetup) initialSetup.style.display = "block";
+          if (initialSetupForm) initialSetupForm.style.display = "block";
+          if (adminInfo) adminInfo.style.display = "none";
+          if (adminLogin) adminLogin.style.display = "none";
+          if (managementFunctions) managementFunctions.style.display = "none";
+        } else {
+          // Hide initial setup if hosts failed to load (network error or partial data)
+          if (initialSetup) initialSetup.style.display = "none";
+          if (initialSetupForm) initialSetupForm.style.display = "none";
+          if (adminInfo) adminInfo.style.display = "block";
+          if (adminLogin) adminLogin.style.display = "block";
+        }
+      }
+
+      function showLoadingState() {
+        // Show loading message in host management tab
+        const initialSetup = document.getElementById("initial-setup");
+        const initialSetupForm = document.getElementById("initial-setup-form");
+        const adminInfo = document.getElementById("admin-info");
+        const adminLogin = document.getElementById("admin-login");
+        const managementFunctions = document.getElementById(
+          "management-functions"
+        );
+
+        // Hide all sections and show loading
+        if (initialSetup) initialSetup.style.display = "none";
+        if (initialSetupForm) initialSetupForm.style.display = "none";
+        if (adminInfo) adminInfo.style.display = "none";
+        if (adminLogin) adminLogin.style.display = "none";
+        if (managementFunctions) managementFunctions.style.display = "none";
+
+        // Show loading message
+        showMessage("host-management-message", "Loading data...", "info");
+      }
+
+      async function setupFirstHost() {
+        const firstName = document
+          .getElementById("firstPlayerName")
+          .value.trim();
+        const firstEmail = document
+          .getElementById("firstPlayerEmail")
+          .value.trim();
+        const firstPassword = document
+          .getElementById("firstPlayerPassword")
+          .value.trim();
+
+        if (!firstName || !firstEmail || !firstPassword) {
+          showMessage(
+            "host-management-message",
+            "Please fill in all fields.",
+            "error"
+          );
+          return;
+        }
+
+        // Show standard loading indicator
+        showSetupLoading();
+
+        try {
+          // Debug logging
+          console.log("=== SETUP DEBUG ===");
+          console.log("Setup Name:", firstName);
+          console.log("Setup Password:", firstPassword);
+
+          // Always hash password before sending
+          const hashedPassword = await hashPassword(firstPassword);
+          let result = await submitToGoogleSheets("setupFirstHost", {
+            firstName: firstName,
+            firstEmail: firstEmail,
+            firstPasswordHash: hashedPassword,
+          });
+          hideSetupLoading();
+
+          if (result.success) {
+            // Clear form first
+            document.getElementById("initialSetupForm").reset();
+
+            // Immediately show the admin login interface
+            // Set a temporary host with admin privileges to trigger the UI change
+            hostConfig.hosts = [
+              { name: firstName, isAdmin: true, role: "Host" },
+            ];
+            checkInitialSetup();
+
+            // Update the admin dropdown immediately with the new admin
+            const adminSelect = document.getElementById("adminName");
+            if (adminSelect) {
+              while (adminSelect.options.length > 1) {
+                adminSelect.remove(1);
+              }
+              const option = document.createElement("option");
+              option.value = firstName;
+              option.textContent = firstName;
+              adminSelect.appendChild(option);
+            }
+
+            // Show success message in the now-visible admin section
+            showMessage(
+              "host-management-message",
+              "Setup complete! Please log in as admin.",
+              "success"
+            );
+
+            // Reload data from sheets to get the actual data (without showing loading overlay)
+            await loadDataFromSheets(false);
+
+            // Ensure admin dropdown is updated with the latest data
+            populatePlayerDropdowns();
+          } else {
+            showMessage("host-management-message", result.message, "error");
+          }
+        } catch (error) {
+          hideSetupLoading();
+          showMessage(
+            "host-management-message",
+            "Setup failed. Please try again.",
+            "error"
+          );
+        }
+      }
+
+      // Password testing function for debugging
+      async function testPasswordHashing() {
+        const testPassword = "test123";
+        const hash1 = await hashPassword(testPassword);
+        const hash2 = await hashPassword(testPassword);
+
+        console.log("=== PASSWORD HASHING TEST ===");
+        console.log("Test Password:", testPassword);
+        console.log("Hash 1:", hash1);
+        console.log("Hash 2:", hash2);
+        console.log("Hashes Match:", hash1 === hash2);
+
+        return hash1 === hash2;
+      }
+
+      // Test connection function
+      async function testConnection() {
+        const resultDiv = document.getElementById("connection-test-result");
+        resultDiv.innerHTML =
+          '<div class="status-message info">Testing connection...</div>';
+
+        try {
+          console.log("Testing connection to:", SCRIPT_URL);
+
+          // Test using POST method like our other functions
+          const playersData = await submitToGoogleSheets("getPlayers", {});
+          console.log("Players response:", playersData);
+
+          // Test hosts data
+          const hostsData = await submitToGoogleSheets("getHosts", {});
+          console.log("Hosts response:", hostsData);
+
+          resultDiv.innerHTML = `
+            <div class="status-message success">
+              ✅ Connection successful!<br>
+              Players response: ${JSON.stringify(playersData)}<br>
+              Hosts response: ${JSON.stringify(hostsData)}
+            </div>
+          `;
+        } catch (error) {
+          console.error("Connection test failed:", error);
+          resultDiv.innerHTML = `
+            <div class="status-message error">
+              ❌ Connection failed: ${error.message}<br>
+              Check browser console for details.
+            </div>
+          `;
+        }
+      }
+
+      // Test function for debugging addHost action
+      async function testAddHostAction() {
+        const resultDiv = document.getElementById("connection-test-result");
+        resultDiv.innerHTML =
+          '<div class="status-message info">Testing addHost action...</div>';
+
+        try {
+          console.log("Testing addHost with sample data...");
+
+          // Test with minimal data to see if the action exists
+          const result = await submitToGoogleSheets("addHost", {
+            adminName: "test",
+            adminPassword: "test",
+            selectedPlayer: "test",
+            newHostRole: "Host",
+            newHostPassword: "test",
+          });
+
+          console.log("Test addHost result:", result);
+
+          resultDiv.innerHTML = `
+            <div class="status-message info">
+              <strong>addHost Action Test Result:</strong><br>
+              Success: ${result.success}<br>
+              Message: ${result.message || "No message"}<br>
+              Full Response: ${JSON.stringify(result)}
+            </div>
+          `;
+        } catch (error) {
+          console.error("Test addHost error:", error);
+          resultDiv.innerHTML = `
+            <div class="status-message error">
+              ❌ Test addHost failed: ${error.message}
+            </div>
+          `;
+        }
+      }
+
+      // Function to load and display current data from sheets
+      async function loadDataAndShow() {
+        const resultDiv = document.getElementById("connection-test-result");
+        resultDiv.innerHTML =
+          '<div class="status-message info">Loading current data...</div>';
+
+        try {
+          // Load all data from sheets
+          await loadDataFromSheets();
+
+          resultDiv.innerHTML = `
+            <div class="status-message info">
+              <strong>Current Data:</strong><br>
+              Players (${players.length}): ${
+            players.length > 0 ? players.join(", ") : "None"
+          }<br>
+              Hosts (${hostConfig.hosts.length}): ${
+            hostConfig.hosts.length > 0
+              ? hostConfig.hosts.map((h) => `${h.name} (${h.role})`).join(", ")
+              : "None"
+          }<br>
+              <br>
+              ${
+                players.length > 0 || hostConfig.hosts.length > 0
+                  ? '<strong>✅ System is already initialized!</strong><br>If you are an admin, use the "Admin Login" section below.'
+                  : "<strong>❌ No data found - you can proceed with initial setup.</strong>"
+              }
+            </div>
+          `;
+
+          // Update the UI based on current data
+          checkInitialSetup();
+          displayCurrentHosts();
+        } catch (error) {
+          console.error("Error loading data:", error);
+          resultDiv.innerHTML = `
+            <div class="status-message error">
+              ❌ Error loading data: ${error.message}
+            </div>
+          `;
+        }
+      }
+
+      function displayCurrentHosts() {
+        const container = document.getElementById("hosts-display");
+        if (!container) return;
+
+        container.innerHTML = "";
+
+        hostConfig.hosts.forEach((host) => {
+          const card = document.createElement("div");
+          card.className = "host-card";
+          card.innerHTML = `
+            <div class="host-name">${host.name}</div>
+            <div class="host-role">${host.role}</div>
+          `;
+          container.appendChild(card);
+        });
+      }
+
+      async function authenticateAdmin() {
+        const adminName = document.getElementById("adminName").value;
+        const adminPassword = document.getElementById("adminPassword").value;
+
+        if (!adminName || !adminPassword) {
+          showMessage(
+            "host-management-message",
+            "Please fill in all fields.",
+            "error"
+          );
+          return;
+        }
+
+        // Show loading message
+        showMessage("host-management-message", "Authenticating...", "info");
+
+        try {
+          try {
+            // Debug logging
+            console.log("=== AUTHENTICATION DEBUG ===");
+            console.log("Admin Name:", adminName);
+            console.log("Original Password:", adminPassword);
+
+            // Always hash password before sending
+            const hashedPassword = await hashPassword(adminPassword);
+            let result = await submitToGoogleSheets("authenticateAdmin", {
+              adminName: adminName,
+              adminPasswordHash: hashedPassword,
+              sessionRequest: true,
+            });
+            console.log("Admin login result:", result);
+
+            if (result.success) {
+              isAdminAuthenticated = true;
+              // Store password in currentAdmin for later use
+              currentAdmin = Object.assign({}, result.admin, {
+                password: adminPassword,
+                sessionToken: generateSecureToken(),
+              });
+              sessionToken = currentAdmin.sessionToken;
+              sessionExpiry = Date.now() + SESSION_DURATION;
+              sessionStorage.setItem(
+                "badminton_session",
+                JSON.stringify({
+                  token: sessionToken,
+                  expiry: sessionExpiry,
+                  admin: currentAdmin,
+                })
+              );
+              document.getElementById("management-functions").style.display =
+                "block";
+              showMessage("host-management-message", result.message, "success");
+              startSessionMonitoring();
+            } else {
+              showMessage("host-management-message", result.message, "error");
+            }
+          } catch (error) {
+            console.error("Authentication error:", error);
+            showMessage(
+              "host-management-message",
+              "Authentication failed. Please try again.",
+              "error"
+            );
+          }
+        } catch (error) {
+          console.error("Authentication error:", error);
+          showMessage(
+            "host-management-message",
+            "Authentication failed. Please try again.",
+            "error"
+          );
+        }
+      }
+
+      async function addPlayer() {
+        if (!isAdminAuthenticated) {
+          showMessage(
+            "host-management-message",
+            "Please authenticate as admin first.",
+            "error"
+          );
+          return;
+        }
+
+        const newPlayerName = document
+          .getElementById("newPlayerName")
+          .value.trim();
+        const newPlayerEmail = document
+          .getElementById("newPlayerEmail")
+          .value.trim();
+
+        // Validate name and email
+        if (!newPlayerName || !newPlayerEmail) {
+          showMessage(
+            "host-management-message",
+            "Player name and email are required.",
+            "error"
+          );
+          return;
+        }
+        // Simple email validation
+        const emailRegex = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+        if (!emailRegex.test(newPlayerEmail)) {
+          showMessage(
+            "host-management-message",
+            "Please enter a valid email address.",
+            "error"
+          );
+          return;
+        }
+
+        // Show loading spinner in Add Player button
+        const addPlayerBtn = document.querySelector("#newPlayerEmail + button");
+        if (addPlayerBtn) {
+          addPlayerBtn.disabled = true;
+          addPlayerBtn.innerHTML =
+            '<span class="setup-loading-spinner" style="width:18px;height:18px;margin-right:8px;vertical-align:middle;"></span>Adding...';
+        }
+        showMessage("host-management-message", "Adding player...", "info");
+
+        // Hash admin password before sending
+        const hashedAdminPassword = await hashPassword(currentAdmin.password);
+        const result = await submitToGoogleSheets("addPlayer", {
+          adminName: currentAdmin.name,
+          adminPasswordHash: hashedAdminPassword,
+          newPlayerName: newPlayerName,
+          newPlayerEmail: newPlayerEmail,
+        });
+
+        if (result.success) {
+          // Wait until the new player appears in the list
+          let retries = 0;
+          let playerAdded = false;
+          document.getElementById("newPlayerName").value = "";
+          document.getElementById("newPlayerEmail").value = "";
+          while (retries < 20 && !playerAdded) {
+            await loadDataFromSheets(false);
+            if (players.some((p) => p.name === newPlayerName)) {
+              playerAdded = true;
+              break;
+            }
+            await new Promise((res) => setTimeout(res, 500));
+            retries++;
+          }
+          showMessage("host-management-message", result.message, "success");
+          // Refresh management lists and hosts display
+          updateManagementLists();
+          displayCurrentHosts();
+        } else {
+          showMessage("host-management-message", result.message, "error");
+        }
+        // Restore Add Player button
+        if (addPlayerBtn) {
+          addPlayerBtn.disabled = false;
+          addPlayerBtn.innerHTML = "Add Player";
+        }
+      }
+
+      async function removePlayer() {
+        if (!isAdminAuthenticated) {
+          showMessage(
+            "host-management-message",
+            "Please authenticate as admin first.",
+            "error"
+          );
+          return;
+        }
+
+        let selectedValue = document.getElementById("removePlayerName").value;
+        let selectedPlayer = "";
+        let selectedPlayerEmail = "";
+        if (selectedValue) {
+          const parts = selectedValue.split("|");
+          selectedPlayer = parts[0];
+          selectedPlayerEmail = parts[1] || "";
+        }
+        if (!selectedPlayer) {
+          showMessage(
+            "host-management-message",
+            "Please select a player to remove.",
+            "error"
+          );
+          return;
+        }
+
+        // Show loading spinner in Remove Player button
+        const removePlayerBtn = document.querySelector(
+          "#removePlayerName + button"
+        );
+        if (removePlayerBtn) {
+          removePlayerBtn.disabled = true;
+          removePlayerBtn.innerHTML =
+            '<span class="setup-loading-spinner"></span> Removing...';
+        }
+        showMessage("host-management-message", "Removing player...", "info");
+
+        // Hash admin password before sending
+        const hashedAdminPassword = await hashPassword(currentAdmin.password);
+        const result = await submitToGoogleSheets("removePlayer", {
+          adminName: currentAdmin.name,
+          adminPasswordHash: hashedAdminPassword,
+          playerToRemove: selectedPlayer,
+          playerToRemoveEmail: selectedPlayerEmail,
+        });
+
+        if (result.success) {
+          showMessage("host-management-message", result.message, "success");
+        } else {
+          showMessage("host-management-message", result.message, "error");
+        }
+        // Wait 1 second, then refresh UI
+        await loadDataFromSheets();
+        updateManagementLists();
+        displayCurrentHosts();
+        populatePlayerDropdowns();
+        // Restore Remove Player button
+        if (removePlayerBtn) {
+          removePlayerBtn.disabled = false;
+          removePlayerBtn.innerHTML = "Remove Player";
+        }
+      }
+
+      async function addHost() {
+        if (!isAdminAuthenticated) {
+          showMessage(
+            "host-management-message",
+            "Please authenticate as admin first.",
+            "error"
+          );
+          return;
+        }
+
+        const selectedValue = document.getElementById(
+          "promotePlayerSelect"
+        ).value;
+        let selectedPlayer = "";
+        let selectedPlayerEmail = "";
+        if (selectedValue) {
+          const parts = selectedValue.split("|");
+          selectedPlayer = parts[0];
+          selectedPlayerEmail = parts[1] || "";
+        }
+        const newHostRole = document.getElementById("newHostRole").value;
+        const newHostPassword = document
+          .getElementById("newHostPassword")
+          .value.trim();
+
+        if (!selectedPlayer || selectedPlayer === "") {
+          showMessage(
+            "host-management-message",
+            "Please select a player to promote.",
+            "error"
+          );
+          return;
+        }
+
+        if (!newHostPassword) {
+          showMessage(
+            "host-management-message",
+            "Please enter a password for the new host.",
+            "error"
+          );
+          return;
+        }
+
+        // Check if player is already a host (should not happen due to filtering, but safety check)
+        const existingHost = hostConfig.hosts.find(
+          (host) => host.name === selectedPlayer
+        );
+        if (existingHost) {
+          showMessage(
+            "host-management-message",
+            "Selected player is already a host.",
+            "error"
+          );
+          return;
+        }
+
+        // Show loading spinner in Promote button
+        const promoteBtn = document.getElementById("promoteHostBtn");
+        if (promoteBtn) {
+          promoteBtn.disabled = true;
+          promoteBtn.innerHTML =
+            '<span class="setup-loading-spinner"></span> Promoting...';
+        }
+        showMessage(
+          "host-management-message",
+          "Promoting player to host...",
+          "info"
+        );
+
+        // Validate session
+        if (!validateSession()) {
+          showMessage(
+            "host-management-message",
+            "Session expired. Please login again.",
+            "error"
+          );
+          clearSession();
+          document.getElementById("management-functions").style.display =
+            "none";
+          return;
+        }
+
+        result = null;
+
+        try {
+          // Hash the new host password before sending
+          const hashedPassword = await hashPassword(newHostPassword);
+          // Hash admin password before sending
+          const hashedAdminPassword = await hashPassword(currentAdmin.password);
+          // Submit to Google Apps Script with hashed passwords and session token
+          result = await submitToGoogleSheets("addHost", {
+            sessionToken: sessionToken,
+            adminName: currentAdmin.name,
+            adminPasswordHash: hashedAdminPassword,
+            newHostName: selectedPlayer,
+            newHostRole: newHostRole,
+            newHostPasswordHash: hashedPassword,
+            newHostEmail: selectedPlayerEmail,
+          });
+        } catch (error) {
+          console.error("addHost error:", error);
+          showMessage(
+            "host-management-message",
+            "Failed to promote player. Please try again.",
+            "error"
+          );
+          return;
+        }
+
+        console.log("addHost result:", result);
+
+        if (result.success) {
+          showMessage("host-management-message", result.message, "success");
+          // Clear form
+          document.getElementById("promotePlayerSelect").selectedIndex = 0;
+          document.getElementById("newHostPassword").value = "";
+        } else {
+          showMessage(
+            "host-management-message",
+            `Error: ${result.message}. Check browser console for details.`,
+            "error"
+          );
+          console.error("addHost failed:", result);
+        }
+        // Wait 1 second, then refresh UI
+        await loadDataFromSheets();
+        updateManagementLists();
+        displayCurrentHosts();
+        populatePlayerDropdowns();
+        // Restore Promote button
+        if (promoteBtn) {
+          promoteBtn.disabled = false;
+          promoteBtn.innerHTML = "Promote to Host/Co-Host";
+        }
+      }
+
+      async function removeHost() {
+        if (!isAdminAuthenticated) {
+          showMessage(
+            "host-management-message",
+            "Please authenticate as admin first.",
+            "error"
+          );
+          return;
+        }
+
+        let selectedValue = document.getElementById("removeHostName").value;
+        let hostToRemove = "";
+        let hostToRemoveEmail = "";
+        if (selectedValue) {
+          const parts = selectedValue.split("|");
+          hostToRemove = parts[0];
+          hostToRemoveEmail = parts[1] || "";
+        }
+
+        if (!hostToRemove) {
+          showMessage(
+            "host-management-message",
+            "Please select a host to remove.",
+            "error"
+          );
+          return;
+        }
+
+        // Prevent removing yourself
+        if (hostToRemove === currentAdmin.name) {
+          showMessage(
+            "host-management-message",
+            "You cannot remove yourself.",
+            "error"
+          );
+          return;
+        }
+
+        // Show loading spinner in Remove Host button
+        const removeHostBtn = document.getElementById("removeHostBtn");
+        if (removeHostBtn) {
+          removeHostBtn.disabled = true;
+          removeHostBtn.innerHTML =
+            '<span class="setup-loading-spinner"></span> Removing...';
+        }
+        // Show loading message
+        showMessage("host-management-message", "Removing host...", "info");
+
+        // Hash admin password before sending
+        const hashedAdminPassword = await hashPassword(currentAdmin.password);
+        const result = await submitToGoogleSheets("removeHost", {
+          adminName: currentAdmin.name,
+          adminPasswordHash: hashedAdminPassword,
+          hostToRemove: hostToRemove,
+          hostToRemoveEmail: hostToRemoveEmail,
+        });
+
+        if (result.success) {
+          showMessage("host-management-message", result.message, "success");
+        } else {
+          showMessage("host-management-message", result.message, "error");
+        }
+        // Wait 1 second, then refresh UI
+        await loadDataFromSheets();
+        updateManagementLists();
+        displayCurrentHosts();
+        populatePlayerDropdowns();
+        // Restore Remove Host button
+        if (removeHostBtn) {
+          removeHostBtn.disabled = false;
+          removeHostBtn.innerHTML = "Remove Host/Co-Host";
+        }
+      }
+
+      function updateManagementLists() {
+        // Update players list
+        const playersList = document.getElementById("current-players-list");
+        if (playersList) {
+          playersList.innerHTML = "";
+          players.forEach((player) => {
+            const li = document.createElement("li");
+            li.textContent = `${player.name} (${player.email})`;
+            playersList.appendChild(li);
+          });
+        }
+
+        // Update hosts list
+        const hostsList = document.getElementById("current-hosts-list");
+        if (hostsList) {
+          hostsList.innerHTML = "";
+          hostConfig.hosts.forEach((host) => {
+            const li = document.createElement("li");
+            li.textContent = `${host.fullName ? host.fullName : host.name} (${
+              host.role
+            }${host.email ? ", " + host.email : ""})`;
+            hostsList.appendChild(li);
+          });
+        }
+      }
+    </script>
+  </body>
+</html>
