@@ -594,9 +594,9 @@
           </li>
           <li>
             <strong>Host Updates:</strong> Host can update actual attendance
-            before 10 AM. If a player forgets to mark "No" with reason and host
-            updates to "Yes" the next day, a warning is given. Removal after 5
-            such warnings.
+            before 10 AM. If a player marks "Yes" for availability but the host
+            updates attendance to "No" the next day (did not attend), a warning
+            is given. Removal after 5 such warnings.
           </li>
         </ul>
       </div>
@@ -641,11 +641,26 @@
                 </select>
               </div>
               <div class="form-group" id="reasonGroup" style="display: none">
-                <label for="reason">Reason (Optional)</label>
+                <label for="reason"
+                  >Reason (Required when selecting "No"):</label
+                >
                 <textarea
                   id="reason"
-                  placeholder="If you selected 'No', you can provide a reason (e.g., sick, out of station)"
+                  rows="3"
+                  placeholder="Please provide a reason for your absence (e.g., sick, out of station)"
                 ></textarea>
+              </div>
+              <div class="form-group">
+                <label for="playerPassword">Player Password</label>
+                <input
+                  type="password"
+                  id="playerPassword"
+                  placeholder="Enter your password"
+                  required
+                />
+                <div class="password-requirement">
+                  Password is required to submit attendance.
+                </div>
               </div>
               <button type="submit">Submit Availability</button>
             </form>
@@ -906,6 +921,7 @@
               <div class="card" style="margin-bottom: 20px">
                 <div class="card-header">👤 Player Management</div>
                 <div class="card-body">
+                  <div id="player-management-message"></div>
                   <div class="form-group">
                     <label for="newPlayerName">Add New Player</label>
                     <input
@@ -919,6 +935,16 @@
                       placeholder="Enter player email"
                       style="margin-top: 8px"
                     />
+                    <input
+                      type="password"
+                      id="newPlayerPassword"
+                      placeholder="Set player password"
+                      style="margin-top: 8px"
+                      required
+                    />
+                    <div class="password-requirement">
+                      Password is required for new player (min 4 characters).
+                    </div>
                     <button
                       type="button"
                       onclick="addPlayer()"
@@ -951,6 +977,7 @@
               <div class="card" style="margin-bottom: 20px">
                 <div class="card-header">👑 Host & Co-Host Management</div>
                 <div class="card-body">
+                  <div id="host-cohost-management-message"></div>
                   <div
                     class="host-info"
                     style="background-color: #e3f2fd; border-color: #bbdefb"
@@ -958,13 +985,14 @@
                     <h4 style="color: #1976d2">ℹ️ Important</h4>
                     <p>
                       Only existing players can be promoted to Host or Co-Host
-                      roles. Add players first, then assign roles.
+                      roles. You can also use this to change an existing Host to
+                      Co-Host or vice versa.
                     </p>
                   </div>
 
                   <div class="form-group">
                     <label for="promotePlayerSelect"
-                      >Promote Player to Host/Co-Host</label
+                      >Promote/Update Player Host Role</label
                     >
                     <select id="promotePlayerSelect" required>
                       <option value="">Select an existing player</option>
@@ -980,22 +1008,29 @@
                       </option>
                     </select>
                   </div>
-                  <div class="form-group">
-                    <label for="newHostPassword">Set Password</label>
-                    <input
-                      type="password"
-                      id="newHostPassword"
-                      placeholder="Create a secure password for this host"
-                      required
-                    />
+                  <div
+                    class="host-info"
+                    style="
+                      background-color: #e3f2fd;
+                      border-color: #bbdefb;
+                      margin-top: 10px;
+                    "
+                  >
+                    <h4 style="color: #1976d2">🔑 Password Information</h4>
+                    <p>
+                      The player's existing password will be used for
+                      Host/Co-Host authentication. They can use the same
+                      password they use for player attendance.
+                    </p>
                   </div>
                   <button
                     type="button"
                     id="promoteHostBtn"
                     onclick="addHost()"
                     class="btn-secondary"
+                    style="margin-top: 15px"
                   >
-                    Promote to Host/Co-Host
+                    Set Host Role
                   </button>
 
                   <div class="form-group" style="margin-top: 20px">
@@ -1121,15 +1156,14 @@
 
       // Security Functions
       async function hashPassword(password) {
-        // Simple client-side hashing using Web Crypto API
+        // Hash using Web Crypto API to match backend (SHA-256 + salt + base64)
         const encoder = new TextEncoder();
         const data = encoder.encode(password + "badminton_salt_2025"); // Add salt
         const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+        // Convert to base64 to match backend format
         const hashArray = Array.from(new Uint8Array(hashBuffer));
-        const hashHex = hashArray
-          .map((b) => b.toString(16).padStart(2, "0"))
-          .join("");
-        return hashHex;
+        const hashBase64 = btoa(String.fromCharCode(...hashArray));
+        return hashBase64;
       }
 
       // Generate a secure session token
@@ -1577,7 +1611,7 @@
           });
         }
 
-        // Populate promote player dropdown (only players who are not already hosts)
+        // Populate promote player dropdown (all players - can add or update hosts)
         const promotePlayerSelect = document.getElementById(
           "promotePlayerSelect"
         );
@@ -1586,17 +1620,26 @@
             promotePlayerSelect.remove(1);
           }
 
-          // Get list of current host names
-          const hostNames = hostConfig.hosts.map((host) => host.name);
+          // Get list of current host names with their roles
+          const hostRoles = {};
+          hostConfig.hosts.forEach((host) => {
+            hostRoles[host.name] = host.role;
+          });
 
-          // Add players who are not already hosts
+          // Add all players, showing current role if they are a host
           players.forEach((player) => {
-            if (!hostNames.includes(player.name)) {
-              const option = document.createElement("option");
-              option.value = `${player.name}|${player.email}`;
+            const option = document.createElement("option");
+            option.value = `${player.name}|${player.email}`;
+
+            // Show current role if they are already a host
+            if (hostRoles[player.name]) {
+              option.textContent = `${player.name} (${
+                player.email
+              }) - Current: ${hostRoles[player.name]}`;
+            } else {
               option.textContent = `${player.name} (${player.email})`;
-              promotePlayerSelect.appendChild(option);
             }
+            promotePlayerSelect.appendChild(option);
           });
         }
       }
@@ -1624,7 +1667,15 @@
           .getElementById("availability")
           .addEventListener("change", function () {
             const reasonGroup = document.getElementById("reasonGroup");
-            reasonGroup.style.display = this.value === "No" ? "block" : "none";
+            const reasonField = document.getElementById("reason");
+            if (this.value === "No") {
+              reasonGroup.style.display = "block";
+              reasonField.required = true;
+            } else {
+              reasonGroup.style.display = "none";
+              reasonField.required = false;
+              reasonField.value = ""; // Clear reason when switching to "Yes"
+            }
           });
 
         // Player form submission
@@ -1719,21 +1770,58 @@
         }
         const availability = document.getElementById("availability").value;
         const reason = document.getElementById("reason").value;
+        const password = document.getElementById("playerPassword").value;
+
+        // Validate reason field when availability is "No"
+        if (availability === "No" && (!reason || reason.trim() === "")) {
+          showMessage(
+            "player-form-message",
+            "Please provide a reason when marking availability as 'No'",
+            "error"
+          );
+          return;
+        }
+
+        if (!password || password.length < 4) {
+          showMessage(
+            "player-form-message",
+            "Password is required (min 4 characters)",
+            "error"
+          );
+          return;
+        }
+
+        // Get the submit button and set loading state
+        const submitBtn = document.querySelector(
+          '#playerAttendanceForm button[type="submit"]'
+        );
+        const originalBtnText = submitBtn.textContent;
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Submitting...";
 
         // Show loading message
         showMessage("player-form-message", "Submitting...", "info");
-
         try {
+          const hashedPassword = await hashPassword(password);
           const result = await submitToGoogleSheets("submitPlayer", {
             playerName: playerName,
             playerEmail: playerEmail,
             availability: availability,
             reason: reason,
+            playerPassword: hashedPassword,
           });
-
           if (result.success) {
             showMessage("player-form-message", result.message, "success");
-            await loadDataFromSheets();
+            submitBtn.textContent = "Loading data...";
+            // Reload data from sheets first
+            await loadDataFromSheets(false);
+            submitBtn.textContent = "Updating views...";
+            // Then update the UI components
+            updatePlayerStatus();
+            updateAttendanceTable();
+            // Reset form after successful update
+            document.getElementById("playerAttendanceForm").reset();
+            document.getElementById("reasonGroup").style.display = "none";
           } else {
             showMessage("player-form-message", result.message, "error");
           }
@@ -1743,12 +1831,11 @@
             "Error submitting attendance: " + error,
             "error"
           );
+        } finally {
+          // Re-enable button and restore text
+          submitBtn.disabled = false;
+          submitBtn.textContent = originalBtnText;
         }
-
-        document.getElementById("playerAttendanceForm").reset();
-        document.getElementById("reasonGroup").style.display = "none";
-        updatePlayerStatus();
-        updateAttendanceTable();
       }
 
       async function submitHostForm() {
@@ -1765,6 +1852,14 @@
           );
           return;
         }
+
+        // Get the submit button and set loading state
+        const submitBtn = document.querySelector(
+          '#hostAttendanceForm button[type="submit"]'
+        );
+        const originalBtnText = submitBtn.textContent;
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Updating...";
 
         // Show loading message
         showMessage("host-form-message", "Updating attendance...", "info");
@@ -1798,16 +1893,31 @@
         } catch (error) {
           showMessage("host-form-message", "Error: " + error, "error");
           return;
+        } finally {
+          // Re-enable button only after all operations complete
         }
 
         if (result && result.success) {
           showMessage("host-form-message", result.message, "success");
+          submitBtn.textContent = "Loading data...";
+          await loadDataFromSheets(false);
+          submitBtn.textContent = "Updating views...";
+          updatePlayerStatus();
+          updateAttendanceTable();
           document.getElementById("hostAttendanceForm").reset();
-          await loadDataFromSheets();
+          // Re-enable button and restore text
+          submitBtn.disabled = false;
+          submitBtn.textContent = originalBtnText;
         } else if (result && result.message) {
           showMessage("host-form-message", result.message, "error");
+          // Re-enable button on error
+          submitBtn.disabled = false;
+          submitBtn.textContent = originalBtnText;
         } else {
           showMessage("host-form-message", "Unknown error occurred.", "error");
+          // Re-enable button on error
+          submitBtn.disabled = false;
+          submitBtn.textContent = originalBtnText;
         }
       }
 
@@ -1997,18 +2107,6 @@
         }, 5000);
       }
 
-      // SECURITY: Sample data function removed for production security
-      function loadSampleData() {
-        // Sample data has been removed for security reasons
-        // This prevents exposure of real user names and system behavior
-        attendanceData = [];
-        console.warn("Sample data loading disabled for security");
-
-        // Update UI with sample data
-        updatePlayerStatus();
-        updateAttendanceTable();
-      }
-
       // Host Management Functions
       function checkInitialSetup() {
         // Don't update UI until data is loaded from Google Sheets
@@ -2145,6 +2243,9 @@
 
             // Ensure admin dropdown is updated with the latest data
             populatePlayerDropdowns();
+
+            // Update the hosts display section at the top of the page
+            displayCurrentHosts();
           } else {
             showMessage("host-management-message", result.message, "error");
           }
@@ -2319,56 +2420,63 @@
           return;
         }
 
+        // Get the submit button and set loading state
+        const loginBtn = document.querySelector(
+          '#adminAuthForm button[type="submit"]'
+        );
+        const originalBtnText = loginBtn.textContent;
+        loginBtn.disabled = true;
+        loginBtn.textContent = "Authenticating...";
+
         // Show loading message
         showMessage("host-management-message", "Authenticating...", "info");
 
         try {
-          try {
-            // Debug logging
-            console.log("=== AUTHENTICATION DEBUG ===");
-            console.log("Admin Name:", adminName);
-            console.log("Original Password:", adminPassword);
+          // Debug logging
+          console.log("=== AUTHENTICATION DEBUG ===");
+          console.log("Admin Name:", adminName);
+          console.log("Original Password:", adminPassword);
 
-            // Always hash password before sending
-            const hashedPassword = await hashPassword(adminPassword);
-            let result = await submitToGoogleSheets("authenticateAdmin", {
-              adminName: adminName,
-              adminPasswordHash: hashedPassword,
-              sessionRequest: true,
+          // Always hash password before sending
+          const hashedPassword = await hashPassword(adminPassword);
+          let result = await submitToGoogleSheets("authenticateAdmin", {
+            adminName: adminName,
+            adminPasswordHash: hashedPassword,
+            sessionRequest: true,
+          });
+          console.log("Admin login result:", result);
+
+          if (result.success) {
+            isAdminAuthenticated = true;
+            // Store hashed password in currentAdmin for later use
+            currentAdmin = Object.assign({}, result.admin, {
+              password: hashedPassword,
+              sessionToken: generateSecureToken(),
             });
-            console.log("Admin login result:", result);
-
-            if (result.success) {
-              isAdminAuthenticated = true;
-              // Store password in currentAdmin for later use
-              currentAdmin = Object.assign({}, result.admin, {
-                password: adminPassword,
-                sessionToken: generateSecureToken(),
-              });
-              sessionToken = currentAdmin.sessionToken;
-              sessionExpiry = Date.now() + SESSION_DURATION;
-              sessionStorage.setItem(
-                "badminton_session",
-                JSON.stringify({
-                  token: sessionToken,
-                  expiry: sessionExpiry,
-                  admin: currentAdmin,
-                })
-              );
-              document.getElementById("management-functions").style.display =
-                "block";
-              showMessage("host-management-message", result.message, "success");
-              startSessionMonitoring();
-            } else {
-              showMessage("host-management-message", result.message, "error");
-            }
-          } catch (error) {
-            console.error("Authentication error:", error);
-            showMessage(
-              "host-management-message",
-              "Authentication failed. Please try again.",
-              "error"
+            sessionToken = currentAdmin.sessionToken;
+            sessionExpiry = Date.now() + SESSION_DURATION;
+            sessionStorage.setItem(
+              "badminton_session",
+              JSON.stringify({
+                token: sessionToken,
+                expiry: sessionExpiry,
+                admin: currentAdmin,
+              })
             );
+            document.getElementById("management-functions").style.display =
+              "block";
+            showMessage("host-management-message", result.message, "success");
+            startSessionMonitoring();
+
+            // Reset form and button
+            document.getElementById("adminAuthForm").reset();
+            loginBtn.disabled = false;
+            loginBtn.textContent = originalBtnText;
+          } else {
+            showMessage("host-management-message", result.message, "error");
+            // Re-enable button on error
+            loginBtn.disabled = false;
+            loginBtn.textContent = originalBtnText;
           }
         } catch (error) {
           console.error("Authentication error:", error);
@@ -2377,13 +2485,16 @@
             "Authentication failed. Please try again.",
             "error"
           );
+          // Re-enable button on error
+          loginBtn.disabled = false;
+          loginBtn.textContent = originalBtnText;
         }
       }
 
       async function addPlayer() {
         if (!isAdminAuthenticated) {
           showMessage(
-            "host-management-message",
+            "player-management-message",
             "Please authenticate as admin first.",
             "error"
           );
@@ -2396,12 +2507,21 @@
         const newPlayerEmail = document
           .getElementById("newPlayerEmail")
           .value.trim();
-
-        // Validate name and email
+        const newPlayerPassword =
+          document.getElementById("newPlayerPassword").value;
+        // Validate name, email, and password
         if (!newPlayerName || !newPlayerEmail) {
           showMessage(
-            "host-management-message",
+            "player-management-message",
             "Player name and email are required.",
+            "error"
+          );
+          return;
+        }
+        if (!newPlayerPassword || newPlayerPassword.length < 4) {
+          showMessage(
+            "player-management-message",
+            "Password is required for new player (min 4 characters)",
             "error"
           );
           return;
@@ -2410,64 +2530,89 @@
         const emailRegex = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
         if (!emailRegex.test(newPlayerEmail)) {
           showMessage(
-            "host-management-message",
+            "player-management-message",
             "Please enter a valid email address.",
             "error"
           );
           return;
         }
 
-        // Show loading spinner in Add Player button
-        const addPlayerBtn = document.querySelector("#newPlayerEmail + button");
-        if (addPlayerBtn) {
-          addPlayerBtn.disabled = true;
-          addPlayerBtn.innerHTML =
-            '<span class="setup-loading-spinner" style="width:18px;height:18px;margin-right:8px;vertical-align:middle;"></span>Adding...';
-        }
-        showMessage("host-management-message", "Adding player...", "info");
+        // Find the Add Player button correctly
+        const addPlayerBtn = document.querySelector(
+          'button[onclick="addPlayer()"]'
+        );
 
-        // Hash admin password before sending
-        const hashedAdminPassword = await hashPassword(currentAdmin.password);
-        const result = await submitToGoogleSheets("addPlayer", {
-          adminName: currentAdmin.name,
-          adminPasswordHash: hashedAdminPassword,
-          newPlayerName: newPlayerName,
-          newPlayerEmail: newPlayerEmail,
-        });
-
-        if (result.success) {
-          // Wait until the new player appears in the list
-          let retries = 0;
-          let playerAdded = false;
-          document.getElementById("newPlayerName").value = "";
-          document.getElementById("newPlayerEmail").value = "";
-          while (retries < 20 && !playerAdded) {
-            await loadDataFromSheets(false);
-            if (players.some((p) => p.name === newPlayerName)) {
-              playerAdded = true;
-              break;
-            }
-            await new Promise((res) => setTimeout(res, 500));
-            retries++;
+        try {
+          // Show loading spinner in Add Player button
+          if (addPlayerBtn) {
+            addPlayerBtn.disabled = true;
+            addPlayerBtn.innerHTML =
+              '<span class="setup-loading-spinner" style="width:18px;height:18px;margin-right:8px;vertical-align:middle;"></span>Adding...';
           }
-          showMessage("host-management-message", result.message, "success");
-          // Refresh management lists and hosts display
-          updateManagementLists();
-          displayCurrentHosts();
-        } else {
-          showMessage("host-management-message", result.message, "error");
-        }
-        // Restore Add Player button
-        if (addPlayerBtn) {
-          addPlayerBtn.disabled = false;
-          addPlayerBtn.innerHTML = "Add Player";
+          showMessage("player-management-message", "Adding player...", "info");
+
+          // Hash password before sending - consistent with player availability
+          const hashedPlayerPassword = await hashPassword(newPlayerPassword);
+
+          const result = await submitToGoogleSheets("addPlayer", {
+            adminName: currentAdmin.name,
+            adminPasswordHash: currentAdmin.password,
+            newPlayerName: newPlayerName,
+            newPlayerEmail: newPlayerEmail,
+            newPlayerPassword: hashedPlayerPassword,
+          });
+
+          console.log("Add player result:", result);
+          console.log("Result success:", result.success);
+          console.log("Result message:", result.message);
+
+          if (result.success) {
+            showMessage("player-management-message", result.message, "success");
+
+            // Clear form fields immediately after success
+            document.getElementById("newPlayerName").value = "";
+            document.getElementById("newPlayerEmail").value = "";
+            document.getElementById("newPlayerPassword").value = "";
+
+            // Wait until the new player appears in the list
+            let retries = 0;
+            let playerAdded = false;
+            while (retries < 20 && !playerAdded) {
+              await loadDataFromSheets(false);
+              if (players.some((p) => p.name === newPlayerName)) {
+                playerAdded = true;
+                break;
+              }
+              await new Promise((res) => setTimeout(res, 500));
+              retries++;
+            }
+
+            // Refresh management lists and hosts display
+            updateManagementLists();
+            displayCurrentHosts();
+          } else {
+            showMessage("player-management-message", result.message, "error");
+          }
+        } catch (error) {
+          console.error("Add player error:", error);
+          showMessage(
+            "player-management-message",
+            "Failed to add player. Please try again.",
+            "error"
+          );
+        } finally {
+          // Always restore Add Player button
+          if (addPlayerBtn) {
+            addPlayerBtn.disabled = false;
+            addPlayerBtn.innerHTML = "Add Player";
+          }
         }
       }
 
       async function removePlayer() {
         if (!isAdminAuthenticated) {
           showMessage(
-            "host-management-message",
+            "player-management-message",
             "Please authenticate as admin first.",
             "error"
           );
@@ -2484,8 +2629,21 @@
         }
         if (!selectedPlayer) {
           showMessage(
-            "host-management-message",
+            "player-management-message",
             "Please select a player to remove.",
+            "error"
+          );
+          return;
+        }
+
+        // Prevent self-removal
+        if (
+          selectedPlayer.trim().toLowerCase() ===
+          currentAdmin.name.trim().toLowerCase()
+        ) {
+          showMessage(
+            "player-management-message",
+            "You cannot remove yourself from the system.",
             "error"
           );
           return;
@@ -2493,45 +2651,60 @@
 
         // Show loading spinner in Remove Player button
         const removePlayerBtn = document.querySelector(
-          "#removePlayerName + button"
+          'button[onclick="removePlayer()"]'
         );
-        if (removePlayerBtn) {
-          removePlayerBtn.disabled = true;
-          removePlayerBtn.innerHTML =
-            '<span class="setup-loading-spinner"></span> Removing...';
-        }
-        showMessage("host-management-message", "Removing player...", "info");
 
-        // Hash admin password before sending
-        const hashedAdminPassword = await hashPassword(currentAdmin.password);
-        const result = await submitToGoogleSheets("removePlayer", {
-          adminName: currentAdmin.name,
-          adminPasswordHash: hashedAdminPassword,
-          playerToRemove: selectedPlayer,
-          playerToRemoveEmail: selectedPlayerEmail,
-        });
+        try {
+          if (removePlayerBtn) {
+            removePlayerBtn.disabled = true;
+            removePlayerBtn.innerHTML =
+              '<span class="setup-loading-spinner"></span> Removing...';
+          }
+          showMessage(
+            "player-management-message",
+            "Removing player...",
+            "info"
+          );
 
-        if (result.success) {
-          showMessage("host-management-message", result.message, "success");
-        } else {
-          showMessage("host-management-message", result.message, "error");
-        }
-        // Wait 1 second, then refresh UI
-        await loadDataFromSheets();
-        updateManagementLists();
-        displayCurrentHosts();
-        populatePlayerDropdowns();
-        // Restore Remove Player button
-        if (removePlayerBtn) {
-          removePlayerBtn.disabled = false;
-          removePlayerBtn.innerHTML = "Remove Player";
+          // currentAdmin.password is already hashed - send it directly
+          const result = await submitToGoogleSheets("removePlayer", {
+            adminName: currentAdmin.name,
+            adminPasswordHash: currentAdmin.password,
+            playerToRemove: selectedPlayer,
+            playerToRemoveEmail: selectedPlayerEmail,
+          });
+
+          if (result.success) {
+            showMessage("player-management-message", result.message, "success");
+          } else {
+            showMessage("player-management-message", result.message, "error");
+          }
+
+          // Wait 1 second, then refresh UI
+          await loadDataFromSheets();
+          updateManagementLists();
+          displayCurrentHosts();
+          populatePlayerDropdowns();
+        } catch (error) {
+          console.error("Remove player error:", error);
+          showMessage(
+            "player-management-message",
+            "Failed to remove player. Please try again.",
+            "error"
+          );
+        } finally {
+          // Restore Remove Player button
+          if (removePlayerBtn) {
+            removePlayerBtn.disabled = false;
+            removePlayerBtn.innerHTML = "Remove Player";
+          }
         }
       }
 
       async function addHost() {
         if (!isAdminAuthenticated) {
           showMessage(
-            "host-management-message",
+            "host-cohost-management-message",
             "Please authenticate as admin first.",
             "error"
           );
@@ -2549,36 +2722,65 @@
           selectedPlayerEmail = parts[1] || "";
         }
         const newHostRole = document.getElementById("newHostRole").value;
-        const newHostPassword = document
-          .getElementById("newHostPassword")
-          .value.trim();
 
         if (!selectedPlayer || selectedPlayer === "") {
           showMessage(
-            "host-management-message",
+            "host-cohost-management-message",
             "Please select a player to promote.",
             "error"
           );
           return;
         }
 
-        if (!newHostPassword) {
+        // Find the player's existing password from the players list
+        const playerObj = players.find(
+          (p) =>
+            p.name === selectedPlayer &&
+            p.email.toLowerCase() === selectedPlayerEmail.toLowerCase()
+        );
+
+        if (!playerObj || !playerObj.password) {
           showMessage(
-            "host-management-message",
-            "Please enter a password for the new host.",
+            "host-cohost-management-message",
+            "Player password not found. Please ensure the player exists with a password.",
             "error"
           );
           return;
         }
 
-        // Check if player is already a host (should not happen due to filtering, but safety check)
+        // Check if player is already a host with the same role
         const existingHost = hostConfig.hosts.find(
           (host) => host.name === selectedPlayer
         );
-        if (existingHost) {
+
+        // Prevent changing your own role
+        if (
+          selectedPlayer.trim().toLowerCase() ===
+            currentAdmin.name.trim().toLowerCase() &&
+          existingHost
+        ) {
           showMessage(
-            "host-management-message",
-            "Selected player is already a host.",
+            "host-cohost-management-message",
+            "You cannot change your own role. Only another host can modify your privileges.",
+            "error"
+          );
+          return;
+        }
+
+        // Prevent Co-Hosts from changing other hosts' roles
+        if (currentAdmin.role === "Co-Host" && existingHost) {
+          showMessage(
+            "host-cohost-management-message",
+            "Co-Hosts cannot change the role of other hosts. Only a Host can modify host privileges.",
+            "error"
+          );
+          return;
+        }
+
+        if (existingHost && existingHost.role === newHostRole) {
+          showMessage(
+            "host-cohost-management-message",
+            `${selectedPlayer} is already a ${newHostRole}.`,
             "error"
           );
           return;
@@ -2586,88 +2788,92 @@
 
         // Show loading spinner in Promote button
         const promoteBtn = document.getElementById("promoteHostBtn");
-        if (promoteBtn) {
-          promoteBtn.disabled = true;
-          promoteBtn.innerHTML =
-            '<span class="setup-loading-spinner"></span> Promoting...';
-        }
-        showMessage(
-          "host-management-message",
-          "Promoting player to host...",
-          "info"
-        );
-
-        // Validate session
-        if (!validateSession()) {
-          showMessage(
-            "host-management-message",
-            "Session expired. Please login again.",
-            "error"
-          );
-          clearSession();
-          document.getElementById("management-functions").style.display =
-            "none";
-          return;
-        }
-
-        result = null;
 
         try {
-          // Hash the new host password before sending
-          const hashedPassword = await hashPassword(newHostPassword);
-          // Hash admin password before sending
-          const hashedAdminPassword = await hashPassword(currentAdmin.password);
+          if (promoteBtn) {
+            promoteBtn.disabled = true;
+            promoteBtn.innerHTML =
+              '<span class="setup-loading-spinner"></span> Processing...';
+          }
+
+          // Show appropriate message based on whether updating or adding
+          const actionMessage = existingHost
+            ? `Updating ${selectedPlayer} to ${newHostRole}...`
+            : `Promoting ${selectedPlayer} to ${newHostRole}...`;
+
+          showMessage("host-cohost-management-message", actionMessage, "info");
+
+          // Validate session
+          if (!validateSession()) {
+            showMessage(
+              "host-cohost-management-message",
+              "Session expired. Please login again.",
+              "error"
+            );
+            clearSession();
+            document.getElementById("management-functions").style.display =
+              "none";
+            return;
+          }
+
+          // Use the player's existing password (already hashed in the database)
+          const playerPasswordHash = playerObj.password;
+          // currentAdmin.password is already hashed - send it directly
           // Submit to Google Apps Script with hashed passwords and session token
-          result = await submitToGoogleSheets("addHost", {
+          const result = await submitToGoogleSheets("addHost", {
             sessionToken: sessionToken,
             adminName: currentAdmin.name,
-            adminPasswordHash: hashedAdminPassword,
+            adminPasswordHash: currentAdmin.password,
             newHostName: selectedPlayer,
             newHostRole: newHostRole,
-            newHostPasswordHash: hashedPassword,
+            newHostPasswordHash: playerPasswordHash,
             newHostEmail: selectedPlayerEmail,
           });
+
+          console.log("addHost result:", result);
+
+          if (result.success) {
+            showMessage(
+              "host-cohost-management-message",
+              result.message,
+              "success"
+            );
+            // Clear form
+            document.getElementById("promotePlayerSelect").selectedIndex = 0;
+          } else {
+            showMessage(
+              "host-cohost-management-message",
+              `Error: ${result.message}. Check browser console for details.`,
+              "error"
+            );
+            console.error("addHost failed:", result);
+          }
+
+          // Wait 1 second, then refresh UI
+          await loadDataFromSheets();
+          updateManagementLists();
+          displayCurrentHosts();
+          populatePlayerDropdowns();
         } catch (error) {
           console.error("addHost error:", error);
           showMessage(
-            "host-management-message",
-            "Failed to promote player. Please try again.",
+            "host-cohost-management-message",
+            "Failed to update role. Please try again.",
             "error"
           );
-          return;
-        }
-
-        console.log("addHost result:", result);
-
-        if (result.success) {
-          showMessage("host-management-message", result.message, "success");
-          // Clear form
-          document.getElementById("promotePlayerSelect").selectedIndex = 0;
-          document.getElementById("newHostPassword").value = "";
-        } else {
-          showMessage(
-            "host-management-message",
-            `Error: ${result.message}. Check browser console for details.`,
-            "error"
-          );
-          console.error("addHost failed:", result);
-        }
-        // Wait 1 second, then refresh UI
-        await loadDataFromSheets();
-        updateManagementLists();
-        displayCurrentHosts();
-        populatePlayerDropdowns();
-        // Restore Promote button
-        if (promoteBtn) {
-          promoteBtn.disabled = false;
-          promoteBtn.innerHTML = "Promote to Host/Co-Host";
+        } finally {
+          // Restore Promote button
+          if (promoteBtn) {
+            promoteBtn.disabled = false;
+            promoteBtn.innerHTML = "Set Host Role";
+          }
         }
       }
 
       async function removeHost() {
         if (!isAdminAuthenticated) {
           showMessage(
-            "host-management-message",
+            "host-cohost-management-message",
             "Please authenticate as admin first.",
             "error"
           );
@@ -2685,7 +2891,7 @@
 
         if (!hostToRemove) {
           showMessage(
-            "host-management-message",
+            "host-cohost-management-message",
             "Please select a host to remove.",
             "error"
           );
@@ -2693,10 +2899,23 @@
         }
 
         // Prevent removing yourself
-        if (hostToRemove === currentAdmin.name) {
+        if (
+          hostToRemove.trim().toLowerCase() ===
+          currentAdmin.name.trim().toLowerCase()
+        ) {
           showMessage(
-            "host-management-message",
-            "You cannot remove yourself.",
+            "host-cohost-management-message",
+            "You cannot remove yourself from hosts. Only another host can remove you.",
+            "error"
+          );
+          return;
+        }
+
+        // Prevent Co-Hosts from removing any hosts
+        if (currentAdmin.role === "Co-Host") {
+          showMessage(
+            "host-cohost-management-message",
+            "Co-Hosts cannot remove other hosts. Only a Host can remove hosts or co-hosts.",
             "error"
           );
           return;
@@ -2704,37 +2923,60 @@
 
         // Show loading spinner in Remove Host button
         const removeHostBtn = document.getElementById("removeHostBtn");
-        if (removeHostBtn) {
-          removeHostBtn.disabled = true;
-          removeHostBtn.innerHTML =
-            '<span class="setup-loading-spinner"></span> Removing...';
-        }
-        // Show loading message
-        showMessage("host-management-message", "Removing host...", "info");
 
-        // Hash admin password before sending
-        const hashedAdminPassword = await hashPassword(currentAdmin.password);
-        const result = await submitToGoogleSheets("removeHost", {
-          adminName: currentAdmin.name,
-          adminPasswordHash: hashedAdminPassword,
-          hostToRemove: hostToRemove,
-          hostToRemoveEmail: hostToRemoveEmail,
-        });
+        try {
+          if (removeHostBtn) {
+            removeHostBtn.disabled = true;
+            removeHostBtn.innerHTML =
+              '<span class="setup-loading-spinner"></span> Removing...';
+          }
+          // Show loading message
+          showMessage(
+            "host-cohost-management-message",
+            "Removing host...",
+            "info"
+          );
 
-        if (result.success) {
-          showMessage("host-management-message", result.message, "success");
-        } else {
-          showMessage("host-management-message", result.message, "error");
-        }
-        // Wait 1 second, then refresh UI
-        await loadDataFromSheets();
-        updateManagementLists();
-        displayCurrentHosts();
-        populatePlayerDropdowns();
-        // Restore Remove Host button
-        if (removeHostBtn) {
-          removeHostBtn.disabled = false;
-          removeHostBtn.innerHTML = "Remove Host/Co-Host";
+          // currentAdmin.password is already hashed - send it directly
+          const result = await submitToGoogleSheets("removeHost", {
+            adminName: currentAdmin.name,
+            adminPasswordHash: currentAdmin.password,
+            hostToRemove: hostToRemove,
+            hostToRemoveEmail: hostToRemoveEmail,
+          });
+
+          if (result.success) {
+            showMessage(
+              "host-cohost-management-message",
+              result.message,
+              "success"
+            );
+          } else {
+            showMessage(
+              "host-cohost-management-message",
+              result.message,
+              "error"
+            );
+          }
+
+          // Wait 1 second, then refresh UI
+          await loadDataFromSheets();
+          updateManagementLists();
+          displayCurrentHosts();
+          populatePlayerDropdowns();
+        } catch (error) {
+          console.error("Remove host error:", error);
+          showMessage(
+            "host-cohost-management-message",
+            "Failed to remove host. Please try again.",
+            "error"
+          );
+        } finally {
+          // Restore Remove Host button
+          if (removeHostBtn) {
+            removeHostBtn.disabled = false;
+            removeHostBtn.innerHTML = "Remove Host/Co-Host";
+          }
         }
       }
 
